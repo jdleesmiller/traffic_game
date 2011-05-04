@@ -1,4 +1,4 @@
-package de.trafficsimulation.core;
+package de.trafficsimulation.applet;
 import java.util.Vector;
 
 public class SpaceAvDet{

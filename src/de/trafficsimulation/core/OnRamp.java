@@ -11,7 +11,6 @@ public class OnRamp extends MicroStreet{
                     //  Lane-changing params to change to main  
                     // once on main road, use mainroad.inconsiderate
     private LaneChange laneChangeModel;
-    private int choice_BC;
     private double mergingPos;
     private MicroStreet mainroad;
     private Moveable me, frontVeh;              // on on-ramp
@@ -34,7 +33,6 @@ public class OnRamp extends MicroStreet{
 	this.mainroad = mainroad;
 	this.mergingPos = mergingPosAtMainroad; //centered (m)
 	this.rampLength = rampLength;   //  (m)
-	this.choice_BC = 1;      // open BC
 
         // set standing obstacles marking end of on-ramp
 
@@ -93,8 +91,6 @@ public class OnRamp extends MicroStreet{
     private void mergeToMainRoad(LaneChange laneChangeModel,
                double mergingPos){
  
-       final double bmax=4.;  // maximum save braking deceleration
-        final double dmin=5.;  // minimum distance necessary to change
         final double offsetMain =  mergingPos - (getRoadLength()-0.5*rampLength);
 	int imax=street.size()-1;
 	int nvehmain=mainroad.street.size();

@@ -7,7 +7,7 @@ public class BCCar implements Moveable {
   private double pos;
   private double vel = 10.0;
   private int lane = 0;
-  private Color color = Color.red;
+  private Color color = Color.white;
   private double length;
   private MicroModel model;
 
@@ -67,7 +67,7 @@ public class BCCar implements Moveable {
   }
 
   public Color color() {
-    return Color.white; // TODO return this.color (but default to white)
+    return this.color;
   }
 
   public int NR() {

@@ -1,10 +1,10 @@
-package de.trafficsimulation.core;
+package de.trafficsimulation.applet;
 import java.util.Vector;
 
 public class TimeAvDet{
 
-    private Vector buffer = new Vector();
-    private Vector times = new Vector();
+    private Vector<Double> buffer = new Vector<Double>();
+    private Vector<Double> times = new Vector<Double>();
     private double DeltaT;
     private double pos;
     private int lane;
@@ -15,8 +15,8 @@ public class TimeAvDet{
 	this.lane=lane;
     }
 
-    public void update(Vector act_pos, Vector old_pos, Vector vel, 
-		       Vector lanes, double time){
+    public void update(Vector<Double> act_pos, Vector<Double> old_pos, Vector<Double> vel, 
+		       Vector<Integer> lanes, double time){
 	int count=act_pos.size();
 	for (int i=0;i<count;i++){
 	    if(((Integer)(lanes.elementAt(i))).intValue()==lane){

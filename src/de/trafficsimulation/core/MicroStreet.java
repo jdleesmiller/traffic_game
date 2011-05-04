@@ -556,8 +556,6 @@ beiden Spuren neue Fz eingefuehrt werden koennen (Ringstrasse)
     }
 
     protected void changeLanes(double dt){
-        final double bsave=5.;  // maximum save braking deceleration
-        final double dmin=5.;  // minimum distance necessary to change
 	int imax=street.size()-3;
 
 	for (int i=2; i<imax; i++){
