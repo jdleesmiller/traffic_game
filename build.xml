@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ================================== -->
+<!-- ANT-Script (c) 2008                -->
+<!-- @author Arne Kesting               -->
+<!-- @version 1.0                       -->
+<!-- ================================== -->
+
+<project name="trafficsimulation" basedir="." default="jar">
+    <echo message="Building ${ant.project.name}" />
+	
+	<property name="site-name" value="www.traffic-simulation.de" />
+	
+    <property name="src.dir"       value="src"/> 
+    <property name="target.dir"    value="target"/>
+    <property name="main-class"    value="MicroSim"/>  <!-- Name of main method -->
+
+    <target name="init">
+      <mkdir dir="${target.dir}"/>
+    </target>
+
+
+    <target name="compile" depends="init">
+        <echo>Compile own sources...</echo>
+       <javac srcdir="${src.dir}" destdir="${target.dir}" source="1.5" target="1.5">
+        <!--<javac srcdir="${src.dir}" destdir="${target.dir}">-->
+        	<compilerarg line="-Xlint:unchecked"/>
+    	</javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${basedir}/${ant.project.name}.jar" basedir="${target.dir}" compress="true" >
+            <manifest>
+            	<attribute name="Built-By" value="Martin Treiber, Arne Kesting, TU Dresden, Germany"/>
+            	<attribute name="Built-Date" value="${TODAY}"/>   
+                <attribute name="Main-Class" value="${main-class}"/>
+			    <!-- <attribute name="Class-Path" value="."/> -->
+            </manifest>
+        </jar>
+    </target>
+
+		
+    <!-- CLEAN -->
+    <target name="clean" depends="init,jar">
+	<echo message="** CLEAN all classes and jar..." />
+        <delete failonerror="false" dir="${target.dir}"/>
+    </target>
+	
+
+</project>
+
