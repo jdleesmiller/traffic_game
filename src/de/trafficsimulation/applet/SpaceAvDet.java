@@ -3,8 +3,8 @@ import java.util.Vector;
 
 public class SpaceAvDet{
 
-    private Vector avVel = new Vector();
-    private Vector avDist = new Vector();
+    private Vector<Double> avVel = new Vector<Double>();
+    private Vector<Double> avDist = new Vector<Double>();
     private double DeltaX;
     private double pos;
     private int lane;
@@ -15,13 +15,13 @@ public class SpaceAvDet{
 	this.lane=lane;
     }
 
-    public void update(Vector act_pos, Vector distances, Vector vel, Vector lanes){
+    public void update(Vector<Double> act_pos, Vector<Double> distances, Vector<Double> vel, Vector<Integer> lanes){
 
 	int count=(distances.size()<vel.size())
 	    ?distances.size():vel.size();
 	count=count-1;
-	avVel = new Vector();
-	avDist = new Vector();
+	avVel = new Vector<Double>();
+	avDist = new Vector<Double>();
 	for (int i=0;i<=count;i++){
 	    if ((((Integer)(lanes.elementAt(i))).intValue())==lane){
 		double posc=((Double)(act_pos.elementAt(i))).doubleValue();

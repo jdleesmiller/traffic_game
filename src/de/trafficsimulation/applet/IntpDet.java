@@ -1,4 +1,4 @@
-package de.trafficsimulation;
+package de.trafficsimulation.applet;
 import java.util.Vector;
 
 public class IntpDet{
@@ -13,7 +13,7 @@ public class IntpDet{
 	this.lane=lane;
     }
 
-    public void update(Vector act_pos, Vector distances, Vector vel, Vector lanes){
+    public void update(Vector<Double> act_pos, Vector<Double> distances, Vector<Double> vel, Vector<Integer> lanes){
 
 	up=false;
 	down=false;
