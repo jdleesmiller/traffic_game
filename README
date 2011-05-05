@@ -1,0 +1,6 @@
+A traffic flow game... in progress.
+
+To build and run, type
+  make
+
+Or you can import this project into Eclipse (www.eclipse.org).
