@@ -20,7 +20,6 @@ public interface Constants { // MicroApplet3_0
   static final int CHOICE_SCEN_INIT = 1;
   static final boolean DOUBLEBUF = true; // whether double-buffering used
   static final int FRAMES_PER_TIMESTEP = 1; // simulation time step
-  static final boolean STRAIGHT_ROAD = false;
   static final boolean CLOCKWISE = true; // car movement in ring geometry
   static final double TIMESTEP_S = 0.25; // simulation time step
   // static final double FRAC_TRUCK_INIT = 0.2; // not for circle

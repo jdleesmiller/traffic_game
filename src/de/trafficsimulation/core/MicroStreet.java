@@ -30,7 +30,6 @@ public class MicroStreet implements Constants {
 
   // ######## colors <martin nov07>
 
-  // static final Color colorCar=new Color(0,130,230);
   public static final Color colorCar = new Color(210, 0, 0);
   public static final Color colorTruck = new Color(40, 40, 60);
   public static final Color colorPerturb = new Color(255, 130, 0);
@@ -70,13 +69,8 @@ public class MicroStreet implements Constants {
   public boolean red = false;
 
   // longitudinal models;
-  // sync* types only needed for choice_Szen==4; defined there
   private MicroModel idmCar = new IDMCar();
   private MicroModel idmTruck = new IDMTruck();
-  private MicroModel sync1Car;
-  protected MicroModel sync2Car;
-  private MicroModel sync1Truck;
-  protected MicroModel sync2Truck;
 
   // lane-change models (p, db, smin, bsave)
 
@@ -107,6 +101,9 @@ public class MicroStreet implements Constants {
 
   // Source: nin = integral of inflow mod 1
   protected double nin = 0.0;
+  
+  // see getNumCarsOut
+  private int numCarsOut;
 
   public MicroStreet(double length, double density, double p_factor,
       double deltaB, int floatcar_nr, int choice_Szen) {
@@ -118,10 +115,8 @@ public class MicroStreet implements Constants {
     inconsiderate.set_p(p_factor);
     inconsiderate.set_db(deltaB);
     double mult = ((choice_Geom == 0) && CLOCKWISE) ? (-1) : 1;
-    double bias_right_truck = (choice_Szen == 3) ? BIAS_RIGHT_TRUCK3
-        : BIAS_RIGHT_TRUCK;
-    double bias_right_car = (choice_Szen == 3) ? BIAS_RIGHT_CAR3
-        : BIAS_RIGHT_CAR;
+    double bias_right_truck = BIAS_RIGHT_TRUCK;
+    double bias_right_car = BIAS_RIGHT_CAR;
     polite.set_biasRight(mult * bias_right_truck);
     inconsiderate.set_biasRight(mult * bias_right_car);
 
@@ -156,81 +151,6 @@ public class MicroStreet implements Constants {
       }
       ((Moveable) street.elementAt(0)).setVelocity(0.5 * vNew);
     }
-
-    // ########### Closed circle; slalom around obstacles
-
-    if (choice_Szen == 6) {
-      int nCars = (int) (0.050 * getRoadLength());
-      int index = 0;
-      for (int i = 0; i < nCars; i++) {
-        int lane;
-        if (i % 2 == 0) {
-          lane = 1;
-        } else {
-          lane = 0;
-        }
-        if (i % 7 == 0) {
-          if (i != 49)
-            street.insertElementAt(new Obstacle(getRoadLength() - (i + 1)
-                * 20.0, lane, 5., 9999), index);
-          if (i == 49)
-            street.insertElementAt(new Obstacle(getRoadLength() + 30.0
-                - (i + 1) * 20.0, lane, 5., 9999), index);
-        } else {
-          if (i < ((int) (0.5 * nCars))) {
-            street.insertElementAt(new Car(getRoadLength() - (i + 1) * 20.0,
-                0.0, lane, getIdmCar(), inconsiderate, PKW_LENGTH_M, colorCar,
-                i), index);
-          } else {
-            street.insertElementAt(new Car(getRoadLength() - (i + 1) * 20.0,
-                0.0, lane, getIdmCar(), inconsiderate, PKW_LENGTH_M,
-                Color.green, i), index);
-          }
-        }
-        if (i != 49) {
-          index++;
-        }
-      }
-    }
-
-    // ######### Traffic light
-
-    if (choice_Szen == 5) {
-      double pos = getRoadLength() * RELPOS_TL;
-      street.addElement(new Obstacle(pos, 0, 10., 0));
-      street.addElement(new Obstacle(pos, 1, 10., 1));
-      street.addElement(new Car(5.0, getIdmCar().Veq(getRoadLength()), 0,
-          getIdmCar(), polite, PKW_LENGTH_M, colorCar, 2));
-    }
-
-    // ######### Lane closing on (left) lane 0
-
-    if (choice_Szen == 3) {
-      double bottleneck_end = RELPOS_LANECL * getRoadLength();
-      double obst_elem_length = 12;
-      int n_obst = (int) (LANECL_LENGTH);
-      for (int i = 0; i < n_obst; i++) {
-        double pos = bottleneck_end - i * obst_elem_length;
-        street
-            .insertElementAt(new Obstacle(pos, 0, obst_elem_length + 1, i), i);
-      }
-      street.insertElementAt(new Car(5.0, getIdmTruck().Veq(getRoadLength()),
-          0, getIdmTruck(), polite, LKW_LENGTH_M, colorTruck, n_obst), n_obst);
-    }
-
-    // choice_Szen 4: Flow-conservong bottlenecks: feature in translate!
-    // but initialize the 4 sync types here
-
-    if (choice_Szen == 4) {
-      setSync1Car(new IDMSync());
-      sync2Car = new IDMSyncdown(); // bottleneck region
-      setSync1Truck(new IDMTruckSync());
-      sync2Truck = new IDMTruckSyncdown(); // bottleneck region
-
-      street.insertElementAt(new Car(5.0, getSync1Car().Veq(getRoadLength()),
-          0, getSync1Car(), polite, PKW_LENGTH_M, colorCar, 0), 0);
-    }
-
   }
 
   // ################# end constructor ##########################
@@ -347,16 +267,10 @@ public class MicroStreet implements Constants {
     old_pos = setPos(); // need old info for detectors and drawing
     old_lanes = setLanes();
     old_numbers = setNr();
-    if (choice_Szen == 3) { // particularly aggressive for lane closing
-      inconsiderate.set_p(0.);
-      polite.set_db(DB_TRUCK3);
-      inconsiderate.set_db(DB_CAR3);
-      inconsiderate.set_bsave(6.);
-    } else {
-      inconsiderate.set_p(p_factor);
-      polite.set_db(DB_TRUCK);
-      inconsiderate.set_db(DB_CAR);
-    }
+    inconsiderate.set_p(p_factor);
+    polite.set_db(DB_TRUCK);
+    inconsiderate.set_db(DB_CAR);
+    
     // choice_BC=0: per. BC; otherwise open BC
     int choice_BC = ((choice_Szen == 1) || (choice_Szen == 6)) ? 0 : 1;
 
@@ -412,6 +326,8 @@ public class MicroStreet implements Constants {
   /*
    * <Treiber aug06> Methode veraendert, so dass auch bei 0 Fz auf beiden Spuren
    * neue Fz eingefuehrt werden koennen (Ringstrasse) </Treiber>
+   * translation: Method changed, so that even at 0 Fz on both tracks
+   * new Fz can be introduced (ring road)
    */
 
   private void insertOneVehicle(double perTr) {
@@ -618,30 +534,11 @@ public class MicroStreet implements Constants {
   }
 
   protected int translate(double dt, int choice_Szen) {
-
     // without sorting
-
     int imax = street.size();
     for (int i = 0; i < imax; i++) {
       Moveable me = (Moveable) street.elementAt(i);
-      double x_old = me.position();
       me.translate(dt);
-      double x_new = me.position();
-
-      // if Szenario 4, flow-conserving bottlenecks
-      // realized with parameter
-      // gradients and uppos is crossed:
-      // Change upstream to downstream parameters
-
-      if (choice_Szen == 4) {
-        if ((x_old <= uppos) && (x_new > uppos)) {
-          if (me.model() == getSync1Truck()) {
-            me.setModel(sync2Truck);
-          } else {
-            me.setModel(sync2Car);
-          }
-        }
-      }
     }
     return street.size();
   }
@@ -687,6 +584,7 @@ public class MicroStreet implements Constants {
         while ((imax >= 0) && // (imax>=0) first to prevent indexOutOf...!
             (((Moveable) (street.elementAt(0))).position() > getRoadLength())) {
           street.removeElementAt(0);
+          ++numCarsOut;
           imax--;
         }
       }
@@ -711,15 +609,12 @@ public class MicroStreet implements Constants {
           int lane = (laneLastVeh == 0) ? 1 : 0; // insert on other lane
           int iPrev = lastIndexOnLane(lane); // index of previous vehicle
           double space = ((Moveable) (street.elementAt(iPrev))).position();
-          double vPrev = ((Moveable) (street.elementAt(iPrev))).velocity();
 
           // enough space for new vehicle to enter? (!red)
 
           if (!(red = (space < spaceMin))) {
-            MicroModel carmodel = (choice_Szen != 4) ? getIdmCar()
-                : getSync1Car();
-            MicroModel truckmodel = (choice_Szen != 4) ? getIdmTruck()
-                : getSync1Truck();
+            MicroModel carmodel = getIdmCar();
+            MicroModel truckmodel = getIdmTruck();
             double rand = random.nextDouble() * 1.0;
             int randInt = Math.abs(random.nextInt());
             MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
@@ -741,10 +636,8 @@ public class MicroStreet implements Constants {
         // at least one lane without vehicles
 
         else {
-          MicroModel carmodel = (choice_Szen != 4) ? getIdmCar()
-              : getSync1Car();
-          MicroModel truckmodel = (choice_Szen != 4) ? getIdmTruck()
-              : getSync1Truck();
+          MicroModel carmodel = getIdmCar();
+          MicroModel truckmodel = getIdmTruck();
           double rand = random.nextDouble() * 1.0;
           int randInt = Math.abs(random.nextInt());
           MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
@@ -864,14 +757,6 @@ public class MicroStreet implements Constants {
     hR = (Moveable) street.elementAt(hr);
   }
 
-  // remove the two white obstacles when traffic ight turns green
-  // (only once in a simulation and only for choice_Szen==5)
-
-  public void open() {
-    street.removeElementAt(0);
-    street.removeElementAt(0);
-  }
-
   public void setRoadLength(double roadLength) {
     this.roadLength = roadLength;
   }
@@ -895,20 +780,14 @@ public class MicroStreet implements Constants {
   public MicroModel getIdmCar() {
     return idmCar;
   }
-
-  public void setSync1Truck(MicroModel sync1Truck) {
-    this.sync1Truck = sync1Truck;
-  }
-
-  public MicroModel getSync1Truck() {
-    return sync1Truck;
-  }
-
-  public void setSync1Car(MicroModel sync1Car) {
-    this.sync1Car = sync1Car;
-  }
-
-  public MicroModel getSync1Car() {
-    return sync1Car;
+  
+  /**
+   * For a street with open boundary conditions, the number of vehicles that
+   * have exited the simulation.
+   * 
+   * @return non-negative
+   */
+  public int getNumCarsOut() {
+    return numCarsOut;
   }
 }
