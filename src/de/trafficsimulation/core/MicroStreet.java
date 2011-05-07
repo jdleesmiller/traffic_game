@@ -166,14 +166,6 @@ public class MicroStreet implements Constants {
     System.out.println("MicroStreet.applyLocalPert.: new velocity=" + vel);
   }
 
-  public double length() {
-    return getRoadLength();
-  }
-
-  public void setLength(double roadLength) {
-    this.setRoadLength(roadLength);
-  }
-
   // make actual state available in form of vectors over all vehicles;
   // protected methods set public vectors to be used for graphical output
 

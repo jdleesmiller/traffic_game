@@ -235,6 +235,7 @@ public class SimCanvas extends Canvas implements Runnable, Constants {
   }
 
   // end setScales
+  
 
   public void run() {
 
@@ -1042,22 +1043,6 @@ public class SimCanvas extends Canvas implements Runnable, Constants {
     choice_Geom = 1;
     rdlen_m = (choice_Geom == 2) ? STRAIGHT_RDLEN_M : Math.PI * RADIUS_M + 2
         * l_straight_m;
-  }
-
-  // martin jan05
-  // change externally IDM parameters ONLY for cars
-
-  public void changeIDMCarparameters(IDM idm) {
-    System.out.println("in SimCanvas.changeIDMCarparameters");
-    ((IDM) (microstreet.getIdmCar())).set_params(idm);
-  }
-
-  // martin oct07: changeIDMTruckparameters noch DOS wg
-  // temp_car.setModel(..) in MicroStreet.java
-
-  public void changeIDMTruckparameters(IDM idm) {
-    System.out.println("in SimCanvas.changeIDMTruckparameters");
-    ((IDM) (microstreet.getIdmTruck())).set_params(idm);
   }
 
   // paint "Car" and "Truck" symbols and labels

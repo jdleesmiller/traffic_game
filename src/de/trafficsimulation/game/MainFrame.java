@@ -148,7 +148,7 @@ public class MainFrame extends JFrame implements Constants {
   protected void toggleControlVisibility() {
     onRampControls.setVisible(canvas.getScenario() == SCENARIO_ON_RAMP);
   }
-
+  
   /**
    * Load the ring road scenario. Parameters are set to the defaults from the
    * applet.
