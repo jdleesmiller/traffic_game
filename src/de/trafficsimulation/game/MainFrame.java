@@ -1,11 +1,10 @@
 package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -34,60 +33,51 @@ public class MainFrame extends JFrame implements Constants {
    */
   private static final int PAD = 5;
 
-  private SimCanvas canvas;
+  private final JPanel canvasPanel;
+  private final CardLayout canvasCards;
+  private final RingRoadCanvas ringRoadCanvas;
+  private final URoadCanvas uRoadCanvas;
 
-  private JButton ringRoadButton;
-  private JButton onRampButton;
+  private final JButton ringRoadButton;
+  private final JButton onRampButton;
   
   // for the OnRamp scenario 
-  private JPanel onRampControls;
-  private JLabel numCarsOutLabel;
-  private JSlider flowInSlider;
+  private final JPanel onRampControls;
+  private final JLabel numCarsOutLabel;
+  private final JSlider flowInSlider;
 
   public MainFrame() {
     super("Traffic Flow Game");
 
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     
-    // the canvas needs to know when it's been resized
-    addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        canvas.setScales();
-      }
-    });
-
-    //
-    // Create the simulator canvas, which handles the animation.
-    //
-    
-    // NB: these defaults don't matter; they're overwritten later, but we need
-    // something sensible to pass to the constructor now
-    double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
-    int tsleep_ms = SPEED_INIT; // sleeping time per sim. step
-    double qIn = Q_INIT2; // vehicles per hour
-    double p_factorRamp = 0.; // ramp Lanechange factor
-    double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
-    double perTr = FRAC_TRUCK_INIT_CIRCLE; // truck fraction !!!
-    double p_factor = 0.; // lanechanging: politeness factor
-    double deltaB = 0.2; // lanechanging: changing threshold
-    canvas = new SimCanvas(SCENARIO_ON_RAMP, density, qIn, perTr, p_factor,
-        deltaB, p_factorRamp, deltaBRamp, tsleep_ms) {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public void tick() {
-        super.tick();
-        numCarsOutLabel.setText(String.format("%d", microstreet.getNumCarsOut()));
-      }
-    };
-    add(canvas, BorderLayout.CENTER);
-    
     JPanel controlPanel = new JPanel();
     controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.LINE_AXIS));
     add(controlPanel, BorderLayout.SOUTH);
     controlPanel.add(Box.createHorizontalStrut(PAD));
     controlPanel.add(new JLabel("scenario:"));
+    
+    //
+    // Sim canvases that handle the animation.
+    //
+    canvasCards = new CardLayout();
+    canvasPanel = new JPanel();
+    canvasPanel.setLayout(canvasCards);
+    add(canvasPanel, BorderLayout.CENTER);
+    
+    ringRoadCanvas = new RingRoadCanvas();
+    canvasPanel.add(ringRoadCanvas, "ringRoad");
+    
+    uRoadCanvas = new URoadCanvas() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void tick() {
+        super.tick();
+        numCarsOutLabel.setText(String.format("%d", street.getNumCarsOut()));
+      }
+    };
+    canvasPanel.add(uRoadCanvas, "onRamp");
     
     //
     // Scenario selector buttons.
@@ -130,7 +120,9 @@ public class MainFrame extends JFrame implements Constants {
     flowInSlider.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {
-        setParamsForOnRampScenario();
+        if (uRoadCanvas != null) {
+          uRoadCanvas.qIn = flowInSlider.getValue() / 3600.;
+        }
       }
     });
     onRampControls.add(new JLabel("vehicle flow in: "));
@@ -140,13 +132,15 @@ public class MainFrame extends JFrame implements Constants {
     numCarsOutLabel = new JLabel("0");
     onRampControls.add(numCarsOutLabel);
     onRampControls.add(Box.createHorizontalStrut(PAD));
+    
+    loadRingRoadScenario();
   }
   
   /**
    * Show only the controls for the selected scenario.
    */
   protected void toggleControlVisibility() {
-    onRampControls.setVisible(canvas.getScenario() == SCENARIO_ON_RAMP);
+    onRampControls.setVisible(uRoadCanvas.isVisible());
   }
   
   /**
@@ -154,44 +148,11 @@ public class MainFrame extends JFrame implements Constants {
    * applet.
    */
   public void loadRingRoadScenario() {
-    double density = 0.001 * DENS_INIT_INVKM;
-    double qIn = Q_INIT2; // vehicles per hour
-
-    int truckPerc1 = (int) (100 * FRAC_TRUCK_INIT_CIRCLE);
-    double perTr = truckPerc1 / 100.;
-    
-    double v0_limit = 120 / 3.6; // speed limit (m/s)
-    double p_factor = 0.; // lanechanging: politeness factor
-    double deltaB = 0.2; // lanechanging: changing threshold
-    int tsleep_ms = SPEED_INIT; // sleeping time per sim. step
-
-    canvas.stop(); // must stop first
-    canvas.newValues(SCENARIO_RING_ROAD, density, qIn, perTr, v0_limit,
-        p_factor,
-        deltaB, tsleep_ms);
-    canvas.start(SCENARIO_RING_ROAD, density);
+    ringRoadCanvas.stop();
+    uRoadCanvas.stop();
+    canvasCards.show(canvasPanel, "ringRoad");
     toggleControlVisibility();
-  }
-
-  /**
-   * Set the in flow to the value from the slider control, and set everything
-   * else to defaults (taken directly from the applet).
-   */
-  private void setParamsForOnRampScenario() {
-    double qIn = flowInSlider.getValue() / 3600.;
-    double qRamp = QRMP_INIT2 / 3600.;
-    int truckPerc2 = (int) (100 * FRAC_TRUCK_INIT);
-    double perTr = truckPerc2 / 100.; // no slider bar in this scenario//!!!
-
-    double p_factorRamp = 0.;
-    double deltaBRamp = DELTABRAMP_INIT; // negative shift threshold for onramp!
-    
-    double p_factor = 0.; // lanechanging: politeness factor
-    double deltaB = 0.2; // lanechanging: changing threshold
-    int tsleep_ms = SPEED_INIT; // sleeping time per sim. step
-    
-    canvas.newValues2(qIn, perTr, p_factor, deltaB, qRamp, p_factorRamp,
-        deltaBRamp, tsleep_ms);
+    ringRoadCanvas.start();
   }
 
   /**
@@ -200,10 +161,11 @@ public class MainFrame extends JFrame implements Constants {
    * slider control.
    */
   public void loadOnRampScenario() {
-    canvas.stop(); // must stop first
-    setParamsForOnRampScenario();
-    canvas.start(SCENARIO_ON_RAMP, 0.001 * DENS_INIT_INVKM);
+    ringRoadCanvas.stop();
+    uRoadCanvas.stop();
+    canvasCards.show(canvasPanel, "onRamp");
     toggleControlVisibility();
+    uRoadCanvas.start();
   }
 
   /**

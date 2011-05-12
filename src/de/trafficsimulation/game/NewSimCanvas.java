@@ -13,6 +13,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -25,24 +28,25 @@ import de.trafficsimulation.road.RoadBase;
  * Handles the clock for 
  * 
  */
-public class NewSimCanvas extends JPanel implements Constants {
+public abstract class NewSimCanvas extends JPanel implements Constants {
   
   private static final long serialVersionUID = 1L;
   
-  private final MicroStreet street;
+  protected final List<RoadBase> roads;
   
-  protected final RoadBase road;
+  protected final List<Stroke> roadStrokes;
   
   /**
    * Car with rear bumper at the origin, driving north (negative y-axis,
    * in the display's coordinates).
    */
   protected final Shape carTemplate;
+  protected final Shape carBumperTemplate;
   
   /**
    * Target frame rate, in frames per (real) second.
    */
-  private static final double TARGET_FPS = 30;
+  private static final double TARGET_FPS = 20;
 
   /**
    * Error tolerance for dealing with times.
@@ -53,8 +57,6 @@ public class NewSimCanvas extends JPanel implements Constants {
   
   private double simTime = 0.0;
 
-  protected final Stroke roadStroke;
-  
   /// road marking pattern
   final static float laneMarkerDash[] = {(float)LINELENGTH_M};
   
@@ -67,24 +69,32 @@ public class NewSimCanvas extends JPanel implements Constants {
   /// graphics transform
   AffineTransform metersToPixels;
   
-  public NewSimCanvas(MicroStreet street, RoadBase road) {
-    this.street = street;
-    this.road = road;
+  public NewSimCanvas(List<RoadBase> roads) {
+    this.roads = Collections.unmodifiableList(roads);
     
-    // TODO end style should be round
-    roadStroke = new BasicStroke((float)(
-        road.getNumLanes() * road.getLaneWidthMeters()));
+    // create strokes used to draw the road surfaces
+    roadStrokes = new Vector<Stroke>(this.roads.size());
+    for (RoadBase road : this.roads) {
+      roadStrokes.add(new BasicStroke((float)(
+        road.getNumLanes() * road.getLaneWidthMeters()),
+        BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    }
     
+    // set up timer for animation
     timer = new Timer((int) (1000 / TARGET_FPS), new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         tick();
+        simTime += TIMESTEP_S;
         repaint();
       }
     });
     timer.setCoalesce(true);
     
+    // build car templates; we just rotate and translate it to draw
     carTemplate = new Rectangle2D.Double(
         -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M, VEH_WIDTH_M, PKW_LENGTH_M);
+    carBumperTemplate = new Rectangle2D.Double(
+        -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M / 5, VEH_WIDTH_M, PKW_LENGTH_M / 5);
     
     // need to rescale when we're resized
     addComponentListener(new ComponentAdapter() {
@@ -95,14 +105,7 @@ public class NewSimCanvas extends JPanel implements Constants {
     });
   }
   
-  public MicroStreet getStreet() {
-    return street;
-  }
-
   public void start() {
-    // TODO need to reset the MicroStreet somehow, if we're going to allow
-    // multiple sims with a single instance of this canvas
-    
     simTime = 0.0;
     timer.start();
   }
@@ -111,12 +114,23 @@ public class NewSimCanvas extends JPanel implements Constants {
     timer.stop();
   }
   
-  private void tick() {
-    // TODO figure out how to handle these parameters 
-    street.update(simTime, TIMESTEP_S, MainFrame.SCENARIO_RING_ROAD,
-        0.001 * DENS_INIT_INVKM, 0, 0, 0, 0.2);
-    
-    simTime += TIMESTEP_S;
+  public abstract void tick();
+  
+  public List<RoadBase> getRoads() {
+    return roads;
+  }
+
+  /**
+   * Bounding box of all of the roads.
+   * 
+   * @return not null
+   */
+  public Rectangle2D getBoundsMeters() {
+    Rectangle2D.Double bounds = new Rectangle2D.Double();
+    for (RoadBase road : roads) {
+      bounds.add(road.getBoundsMeters());
+    }
+    return bounds;
   }
 
   protected void handleResize() {
@@ -124,18 +138,18 @@ public class NewSimCanvas extends JPanel implements Constants {
     int height = getHeight();
     
     metersToPixels = new AffineTransform();
+    Rectangle2D bounds = this.getBoundsMeters();
     
-    // special case: called before display, or resized to zero
-    if (width == 0 || height == 0) {
-      return;
+    double scale = 1;
+    
+    // special case: may get zero or negative widths when component is hidden;
+    if (width > 0 && height > 0) {
+      double scaleX = width / bounds.getWidth();
+      double scaleY = height / bounds.getHeight();
+      scale = Math.min(scaleX, scaleY);
     }
     
     // set the metersToPixel transform so the road fits into the window
-    int pixelSize = Math.min(width, height);
-    Rectangle2D bounds = road.getBoundsMeters();
-    double meterSize = Math.max(bounds.getWidth(), bounds.getHeight());
-    
-    double scale = pixelSize / meterSize;
     metersToPixels.translate(width / 2, height / 2);
     metersToPixels.scale(scale, scale);
     metersToPixels.translate(-bounds.getCenterX(), -bounds.getCenterY());
@@ -147,17 +161,25 @@ public class NewSimCanvas extends JPanel implements Constants {
     
     repaint();
   }
+  
+  protected abstract void paintVehicles(Graphics2D g2);
 
-  protected void paintVehicles(Graphics2D g2) {
+  /**
+   * TODO find somewhere to put this
+   * Note that it doesn't work for OnRamp
+   * 
+   * @param g2
+   */
+  protected void paintVehiclesOnStreet(Graphics2D g2,
+      RoadBase road, MicroStreet street) {
     AffineTransform txCopy = g2.getTransform();
     
-    MicroStreet street = getStreet();
     int numCars = street.positions.size();
     for (int i = 0; i < numCars; ++i) {
-      road.transformForCarAt(g2,
-          street.lanes.elementAt(i), street.positions.elementAt(i));
-      g2.setColor(Color.RED);
-      g2.fill(carTemplate);
+      int lane = street.lanes.elementAt(i);
+      double position = street.positions.elementAt(i);
+      if (road.transformForCarAt(g2, lane, position))
+        paintCar(g2);
       g2.setTransform(txCopy);
     }
   }
@@ -172,16 +194,44 @@ public class NewSimCanvas extends JPanel implements Constants {
     
     g2.transform(metersToPixels);
     
-    g2.setColor(Color.GRAY);
-    g2.setStroke(roadStroke);
-    g2.draw(road.getRoadCenter());
-    
-    g2.setColor(Color.WHITE);
-    g2.setStroke(laneMarkerStroke);
-    for (Shape marker : road.getLaneMarkers()) {
-      g2.draw(marker);
+    for (int i = 0; i < roads.size(); ++i) {
+      RoadBase road = roads.get(i);
+      Stroke roadStroke = roadStrokes.get(i);
+      
+      g2.setColor(Color.GRAY);
+      g2.setStroke(roadStroke);
+      g2.draw(road.getRoadCenter());
+      
+      g2.setColor(Color.WHITE);
+      g2.setStroke(laneMarkerStroke);
+      for (Shape marker : road.getLaneMarkers()) {
+        g2.draw(marker);
+      }
     }
     
     paintVehicles(g2);
+  }
+  
+  /**
+   * Paint
+   * 
+   * TODO need to know color and whether it's a car or truck
+   * 
+   * @param g2 not null
+   */
+  public void paintCar(Graphics2D g2) {
+    g2.setColor(Color.WHITE);
+    g2.fill(carTemplate);
+    
+    // draw "bumper" at rear
+    g2.setColor(Color.RED);
+    g2.fill(carBumperTemplate);
+  }
+
+  /**
+   * @return the simTime
+   */
+  public double getSimTime() {
+    return simTime;
   }
 }

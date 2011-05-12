@@ -3,7 +3,7 @@ package de.trafficsimulation.road;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Base class for a road or collection of roads.
@@ -29,7 +29,7 @@ public abstract class RoadBase {
    * Lane markers, from left (inner lane) to right (outer lane); coordinates
    * in meters.
    */
-  public abstract Vector<Shape> getLaneMarkers();
+  public abstract List<Shape> getLaneMarkers();
 
   /**
    * Width of one lane, in meters.
@@ -73,7 +73,8 @@ public abstract class RoadBase {
    * @param g2 alters the transform on this object
    * @param lane non-negative
    * @param position of the rear end of the car
+   * @return TODO
    */
-  public abstract void transformForCarAt(
+  public abstract boolean transformForCarAt(
       Graphics2D g2, int lane, double position);
 }

@@ -83,8 +83,9 @@ public class RingRoad extends RoadBase {
   
   
   @Override
-  public void transformForCarAt(Graphics2D g2, int lane, double position) {
+  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
     g2.rotate(2 * Math.PI * -position / getRoadLengthMeters());
     g2.translate(getRadiusMeters() + (lane + 0.5) * getLaneWidthMeters(), 0);
+    return true;
   }
 }

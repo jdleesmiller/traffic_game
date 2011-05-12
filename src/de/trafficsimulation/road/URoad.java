@@ -23,18 +23,21 @@ public class URoad extends CompoundRoad {
     double rightMeters = leftMeters + curveRadiusMeters + straightMeters;
     double topMeters = bottomMeters + 2*curveRadiusMeters + 2*roadWidth;
     
+    // input road
     double inputStartX = rightMeters;
     double inputY = bottomMeters + roadWidth;
     double inputEndX = leftMeters + curveRadiusMeters;
     StraightRoad input = new StraightRoad(numLanes, laneWidthMeters,
         inputStartX, inputY, inputEndX, inputY);
     
+    // output road
     double outputStartX = inputEndX;
     double outputY = topMeters - roadWidth;
     double outputEndX = inputStartX;
     StraightRoad output = new StraightRoad(numLanes, laneWidthMeters,
         outputStartX, outputY, outputEndX, outputY);
     
+    // curve
     double centerY = inputY + curveRadiusMeters;
     ArcRoad arc = new ArcRoad(numLanes, laneWidthMeters, inputEndX, centerY,
         curveRadiusMeters, 90, 180);
@@ -44,5 +47,17 @@ public class URoad extends CompoundRoad {
     roads.add(arc);
     roads.add(output);
     return roads;
+  }
+  
+  public StraightRoad getInputStraightRoad() {
+    return (StraightRoad)getRoads().get(0);
+  }
+  
+  public ArcRoad getCurveRoad() {
+    return (ArcRoad)getRoads().get(1);
+  }
+  
+  public StraightRoad getOutputStraightRoad() {
+    return (StraightRoad)getRoads().get(2);
   }
 }

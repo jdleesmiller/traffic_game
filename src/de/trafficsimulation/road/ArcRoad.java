@@ -4,7 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import static de.trafficsimulation.game.Utility.*;
 
@@ -12,7 +13,7 @@ public class ArcRoad extends RoadBase {
   
   private final Arc2D innerArc;
   private final Arc2D centerArc;
-  private final Vector<Shape> laneMarkers;
+  private final List<Shape> laneMarkers;
   
   /**
    * Constructor
@@ -29,7 +30,7 @@ public class ArcRoad extends RoadBase {
     centerArc = expandArcRadius(innerArc,
         getNumLanes() * getLaneWidthMeters() / 2.0);
     
-    laneMarkers = new Vector<Shape>(getNumLanes() - 1);
+    laneMarkers = new ArrayList<Shape>(getNumLanes() - 1);
     for (int lane = 1; lane < getNumLanes(); ++lane) {
       laneMarkers.add(expandArcRadius(innerArc, lane * getLaneWidthMeters()));
     }
@@ -91,7 +92,7 @@ public class ArcRoad extends RoadBase {
   }
 
   @Override
-  public Vector<Shape> getLaneMarkers() {
+  public List<Shape> getLaneMarkers() {
     return laneMarkers;
   }
 
@@ -103,13 +104,22 @@ public class ArcRoad extends RoadBase {
   @Override
   public double getRoadLengthMeters() {
     // note: getWidth is the diameter; angle extent is in degrees
-    return Math.PI * innerArc.getWidth() * innerArc.getAngleExtent() / 360.0;
+    double fraction = Math.abs(innerArc.getAngleExtent()) / 360.0;
+    return Math.PI * innerArc.getWidth() * fraction;
   }
 
   @Override
-  public void transformForCarAt(Graphics2D g2, int lane, double position) {
-    g2.rotate(2 * Math.PI * -position / getRoadLengthMeters());
+  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
+    double thetaStart = -innerArc.getAngleStart() / 180 * Math.PI;
+    double theta = -position / getRadiusMeters();
+    if (isClockwise())
+      theta *= -1;
+    
+    g2.translate(innerArc.getCenterX(), innerArc.getCenterY());
+    g2.rotate(thetaStart + theta);
     g2.translate(getRadiusMeters() + (lane + 0.5) * getLaneWidthMeters(), 0);
+    
+    return true;
   }
 
   public double getStartXMeters() {

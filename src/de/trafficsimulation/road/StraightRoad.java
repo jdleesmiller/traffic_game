@@ -4,7 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import static de.trafficsimulation.game.Utility.*;
 
@@ -14,7 +15,7 @@ import static de.trafficsimulation.game.Utility.*;
 public class StraightRoad extends RoadBase {
   private final Line2D insideLine;
   private final Line2D roadCenter;
-  private final Vector<Shape> laneMarkers;
+  private final List<Shape> laneMarkers;
   
   public StraightRoad(int numLanes, double laneWidthMeters,
       double startXMeters, double startYMeters,
@@ -29,7 +30,7 @@ public class StraightRoad extends RoadBase {
     roadCenter = translatePerpendicularly(insideLine,
         numLanes * laneWidthMeters / 2.0);
     
-    laneMarkers = new Vector<Shape>(numLanes - 1);
+    laneMarkers = new ArrayList<Shape>(numLanes - 1);
     for (int lane = 1; lane < numLanes; ++lane) {
       laneMarkers.add(translatePerpendicularly(insideLine,
           lane * laneWidthMeters));
@@ -40,12 +41,12 @@ public class StraightRoad extends RoadBase {
   public Rectangle2D getBoundsMeters() {
     Rectangle2D bounds = insideLine.getBounds2D();
     bounds.add(translatePerpendicularly(insideLine,
-        -numLanes * laneWidthMeters).getBounds2D());
+        numLanes * laneWidthMeters).getBounds2D());
     return bounds;
   }
 
   @Override
-  public Vector<Shape> getLaneMarkers() {
+  public List<Shape> getLaneMarkers() {
     return laneMarkers;
   }
 
@@ -60,8 +61,16 @@ public class StraightRoad extends RoadBase {
   }
 
   @Override
-  public void transformForCarAt(Graphics2D g2, int lane, double position) {
-    // TODO Auto-generated method stub
+  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
+    double dy = insideLine.getY2() - insideLine.getY1();
+    double dx = insideLine.getX2() - insideLine.getX1();
+    double theta = Math.atan2(dy, dx);
+    
+    g2.translate(insideLine.getX1(), insideLine.getY1());
+    g2.rotate(theta + Math.PI/2);
+    g2.translate((lane + 0.5) * getLaneWidthMeters(), -position);
+    
+    return true;
   }
   
   public double getStartXMeters() {
