@@ -14,7 +14,7 @@ import de.trafficsimulation.road.RoadBase;
 import de.trafficsimulation.road.StraightRoad;
 import de.trafficsimulation.road.URoad;
 
-public class URoadCanvas extends NewSimCanvas {
+public class URoadCanvas extends SimCanvas {
   
   protected MicroStreet street;
   protected OnRamp onRamp;
@@ -44,7 +44,7 @@ public class URoadCanvas extends NewSimCanvas {
     f.setSize(1000,500);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     
-    NewSimCanvas c = new URoadCanvas();
+    SimCanvas c = new URoadCanvas();
     f.add(c);
     f.setVisible(true);
     c.start();

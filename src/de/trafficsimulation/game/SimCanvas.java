@@ -28,7 +28,7 @@ import de.trafficsimulation.road.RoadBase;
  * Handles the clock for 
  * 
  */
-public abstract class NewSimCanvas extends JPanel implements Constants {
+public abstract class SimCanvas extends JPanel implements Constants {
   
   private static final long serialVersionUID = 1L;
   
@@ -69,7 +69,7 @@ public abstract class NewSimCanvas extends JPanel implements Constants {
   /// graphics transform
   AffineTransform metersToPixels;
   
-  public NewSimCanvas(List<RoadBase> roads) {
+  public SimCanvas(List<RoadBase> roads) {
     this.roads = Collections.unmodifiableList(roads);
     
     // create strokes used to draw the road surfaces

@@ -13,7 +13,7 @@ import de.trafficsimulation.road.RoadBase;
 /**
  * Draw ring road and vehicles.
  */
-public class RingRoadCanvas extends NewSimCanvas {
+public class RingRoadCanvas extends SimCanvas {
 
   private MicroStreet street;
   
@@ -45,7 +45,7 @@ public class RingRoadCanvas extends NewSimCanvas {
     JFrame f = new JFrame("ring test");
     f.setSize(640,480);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    NewSimCanvas c = new RingRoadCanvas();
+    SimCanvas c = new RingRoadCanvas();
     f.add(c);
     f.setVisible(true);
     c.start();
