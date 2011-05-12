@@ -1,6 +1,7 @@
 package de.trafficsimulation.road;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A "U" shape on its side with counter-clockwise flow when drawn with the
@@ -15,7 +16,7 @@ public class URoad extends CompoundRoad {
       leftMeters, topMeters, curveRadiusMeters, straightMeters));
   }
 
-  private static Vector<RoadBase> makeRoads(int numLanes,
+  private static List<RoadBase> makeRoads(int numLanes,
       double laneWidthMeters, double leftMeters, double bottomMeters,
       double curveRadiusMeters, double straightMeters) {
     
@@ -42,7 +43,7 @@ public class URoad extends CompoundRoad {
     ArcRoad arc = new ArcRoad(numLanes, laneWidthMeters, inputEndX, centerY,
         curveRadiusMeters, 90, 180);
     
-    Vector<RoadBase> roads = new Vector<RoadBase>();
+    List<RoadBase> roads = new ArrayList<RoadBase>();
     roads.add(input);
     roads.add(arc);
     roads.add(output);
