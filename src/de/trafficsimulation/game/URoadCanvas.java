@@ -54,7 +54,7 @@ public class URoadCanvas extends SimCanvas {
   public void start() {
     
     this.street = new MicroStreet(getURoad().getRoadLengthMeters(),
-        density, p_factor, deltaB, floatcar_nr, MainFrame.SCENARIO_RING_ROAD);
+        density, p_factor, deltaB, MainFrame.SCENARIO_RING_ROAD);
     
     double mergingPos = Math.PI * RADIUS_M + STRAIGHT_RDLEN_M + 0.5 * L_RAMP_M;
     
@@ -78,10 +78,8 @@ public class URoadCanvas extends SimCanvas {
     if (this.street == null)
       return;
     
-    street.update(getSimTime(), TIMESTEP_S, MainFrame.SCENARIO_ON_RAMP,
-        density, qIn, perTr, p_factor, deltaB);
-    onRamp.update(getSimTime(), TIMESTEP_S, qRamp, perTr, p_factorRamp,
-        deltaBRamp);
+    street.update(TIMESTEP_S, density, qIn, perTr, p_factor, deltaB);
+    onRamp.update(TIMESTEP_S, qRamp, perTr, p_factorRamp, deltaBRamp);
   }
 
   @Override
@@ -110,7 +108,7 @@ public class URoadCanvas extends SimCanvas {
     
     int numCars = onRamp.positions.size();
     for (int i = 0; i < numCars; ++i) {
-      double position = onRamp.positions.elementAt(i);
+      double position = onRamp.positions.get(i);
       if (getOnRampRoad().transformForCarAt(g2, 0, position))
         paintCar(g2);
       g2.setTransform(txCopy);

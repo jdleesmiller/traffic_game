@@ -56,7 +56,7 @@ public class RingRoadCanvas extends SimCanvas {
     
     this.street = new MicroStreet(
         getRingRoad().getRoadLengthMeters(),
-        density, p_factor, deltaB, floatcar_nr, MainFrame.SCENARIO_RING_ROAD);
+        density, p_factor, deltaB, MainFrame.SCENARIO_RING_ROAD);
     
     super.start();
   }
@@ -72,8 +72,8 @@ public class RingRoadCanvas extends SimCanvas {
     if (street == null)
       return;
     
-    street.update(getSimTime(), TIMESTEP_S, MainFrame.SCENARIO_RING_ROAD,
-        density, qIn, perTr, p_factor, deltaB);
+    street.update(TIMESTEP_S, density, qIn,
+        perTr, p_factor, deltaB);
   }
 
   @Override

@@ -13,9 +13,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -73,7 +73,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
     this.roads = Collections.unmodifiableList(roads);
     
     // create strokes used to draw the road surfaces
-    roadStrokes = new Vector<Stroke>(this.roads.size());
+    roadStrokes = new ArrayList<Stroke>(this.roads.size());
     for (RoadBase road : this.roads) {
       roadStrokes.add(new BasicStroke((float)(
         road.getNumLanes() * road.getLaneWidthMeters()),
@@ -176,8 +176,8 @@ public abstract class SimCanvas extends JPanel implements Constants {
     
     int numCars = street.positions.size();
     for (int i = 0; i < numCars; ++i) {
-      int lane = street.lanes.elementAt(i);
-      double position = street.positions.elementAt(i);
+      int lane = street.lanes.get(i);
+      double position = street.positions.get(i);
       if (road.transformForCarAt(g2, lane, position))
         paintCar(g2);
       g2.setTransform(txCopy);
