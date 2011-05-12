@@ -162,7 +162,7 @@ public interface Constants { // MicroApplet3_0
 
   // onramp: Chose straight road geometry (true) or U-shaped (false)
 
-  static final double STRAIGHT_RDLEN_M = 800.;
+  static final double STRAIGHT_RDLEN_M = 400.;
   static final double EXCESS_RDLEN_M = 100.;
   static final double STRAIGHT_RAMPPOS_M = 600.; // center of on-ramp
   static final double ANGLE_ACCESS = 0.2; // arctan(angle of access road)
