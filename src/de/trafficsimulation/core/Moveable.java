@@ -45,8 +45,6 @@ public interface Moveable {
 
   public Color color();
 
-  public int NR();
-
   public boolean change(Moveable fOld, Moveable fNew, Moveable bNew);
 
   public boolean timeToChange(double dt);

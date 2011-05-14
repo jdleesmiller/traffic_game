@@ -22,6 +22,7 @@ import javax.swing.Timer;
 
 import de.trafficsimulation.core.Constants;
 import de.trafficsimulation.core.MicroStreet;
+import de.trafficsimulation.core.Moveable;
 import de.trafficsimulation.road.RoadBase;
 
 /**
@@ -174,11 +175,8 @@ public abstract class SimCanvas extends JPanel implements Constants {
       RoadBase road, MicroStreet street) {
     AffineTransform txCopy = g2.getTransform();
     
-    int numCars = street.positions.size();
-    for (int i = 0; i < numCars; ++i) {
-      int lane = street.lanes.get(i);
-      double position = street.positions.get(i);
-      if (road.transformForCarAt(g2, lane, position))
+    for (Moveable vehicle : street.getStreet()) {
+      if (road.transformForCarAt(g2, vehicle.lane(), vehicle.position()))
         paintCar(g2);
       g2.setTransform(txCopy);
     }

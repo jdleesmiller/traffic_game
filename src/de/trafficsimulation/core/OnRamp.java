@@ -32,11 +32,11 @@ public class OnRamp extends MicroStreet {
     this.rampLength = rampLength; // (m)
 
     // set standing obstacles marking end of on-ramp
-    street.add(new Obstacle(getRoadLength(), 0, 1., 0));
+    street.add(new Obstacle(getRoadLength(), 0, 1.));
 
     // start with one car at the beginning
-    street.add(new Car(5., getIdmCar().Veq(getRoadLength()), 0,
-        getIdmCar(), inconsiderate, PKW_LENGTH_M, colorCar, 2));
+    street.add(VehicleFactory.createVehicle(5., getIdmCar().Veq(getRoadLength()), 0, getIdmCar(), inconsiderate, PKW_LENGTH_M,
+        colorCar));
   }
 
   public void update(double dt, double qRamp, double perTr,
@@ -232,12 +232,11 @@ public class OnRamp extends MicroStreet {
     // offset action below would offset streets on mainroad!
 
     frontVehMain = (i_frontmain < 0) // only back vehicle(s)
-    ? new Car(farDistance, 0, 0, getIdmCar(), inconsiderate, 5, colorCar, 0)
-        : new Car((Car) (mainroad.street.get(i_frontmain)));
+    ? VehicleFactory.createVehicle(farDistance, 0, 0, getIdmCar(),
+        inconsiderate, 5, colorCar) : new Car((Car) (mainroad.street.get(i_frontmain)));
 
-    backVehMain = ((nvehmain < 1) || (i_backmain >= nvehmain)) ? new Car(
-        -farDistance, 0, 0, // only front veh(s) or none
-        getIdmCar(), inconsiderate, 5, colorCar, 0) : new Car(
+    backVehMain = ((nvehmain < 1) || (i_backmain >= nvehmain)) ? VehicleFactory.createVehicle(-farDistance, 0, 0, getIdmCar(), inconsiderate, 5,
+        colorCar) : new Car(
         (Car) (mainroad.street.get(i_backmain)));
     if (debug) {
       System.out.println(" setNeighboursOnMainRoad!!!:" + " nvehmain="
@@ -280,14 +279,13 @@ public class OnRamp extends MicroStreet {
 
       if (!(space < spaceMin)) {
         double rand = random.nextDouble() * 1.0;
-        int randInt = Math.abs(random.nextInt());
         MicroModel modelNew = (rand < perTr) ? getIdmTruck() : getIdmCar();
         double vNew = modelNew.Veq(space);
         double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
         Color colorNew = (rand < perTr) ? colorTruck : colorCar;
 
-        street.add(new Car(0.0, vNew, lane, modelNew,
-            inconsiderate, lNew, colorNew, randInt));
+        street.add(VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, inconsiderate,
+            lNew, colorNew));
       }
     }
   }

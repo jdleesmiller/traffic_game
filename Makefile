@@ -10,9 +10,10 @@ run: $(JAR)
 	java -jar $<
 
 # compile all source
+# omit tests to avoid having to deal with JUnit dependency
 build:
 	mkdir -p bin
-	find src -name *.java | xargs javac -d bin
+	find src -name *.java | grep -v TestUtility | xargs javac -d bin
 
 # build executable jar file for distribution
 $(JAR): build

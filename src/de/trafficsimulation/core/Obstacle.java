@@ -9,8 +9,6 @@ public class Obstacle implements Moveable {
   private int lane;
   private double length;
   private Color color = Color.white;
-  private int nr; // with nr possible to overwrite default color
-                  // in SimCanvas, methods paint*
 
   // model necessary since obstacle=type "Moveable" and lane change checks
   // acceleration! influences 3 following locations labeld with xxx
@@ -21,11 +19,10 @@ public class Obstacle implements Moveable {
     return model;
   } // xxx
 
-  public Obstacle(double x, int lane, double length, int nr) {
+  public Obstacle(double x, int lane, double length) {
     pos = x;
     this.lane = lane;
     this.length = length;
-    this.nr = nr;
     this.model = new IDMCar(); // xxx
   }
 
@@ -72,10 +69,6 @@ public class Obstacle implements Moveable {
 
   public Color color() {
     return color;
-  }
-
-  public int NR() {
-    return nr;
   }
 
   public boolean timeToChange(double dt) {

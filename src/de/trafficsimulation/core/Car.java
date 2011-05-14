@@ -9,8 +9,6 @@ public class Car implements Moveable {
   private int lane = 0;
   private Color color = Color.red;
   private double length = 5.;
-  private int nr; // with nr possible to overwrite default color
-                  // in SimCanvas, methods paint*
   public double tdelay = 0.0;
   public double Tdelay = 1.6;
 
@@ -21,7 +19,7 @@ public class Car implements Moveable {
   // proprties fixed for each car: color, (length,) index n
 
   public Car(double x, double v, int lane, MicroModel model,
-      LaneChange lanechange, double length, Color color, int number) {
+      LaneChange lanechange, double length, Color color) {
     pos = x;
     vel = v;
     this.lane = lane;
@@ -29,7 +27,6 @@ public class Car implements Moveable {
     this.lanechange = lanechange;
     this.length = length;
     this.color = color;
-    nr = number;
   }
 
   public Car(Car carToCopy) {
@@ -40,7 +37,6 @@ public class Car implements Moveable {
     this.lanechange = carToCopy.lanechange;
     this.length = carToCopy.length;
     this.color = carToCopy.color;
-    this.nr = carToCopy.nr;
   }
 
   public void setPosition(double x) {
@@ -93,10 +89,6 @@ public class Car implements Moveable {
 
   public Color color() {
     return color;
-  }
-
-  public int NR() {
-    return nr;
   }
 
   public boolean timeToChange(double dt) {

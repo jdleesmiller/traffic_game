@@ -35,20 +35,12 @@ public class MicroStreet implements Constants {
   public static final Color colorTruck = new Color(40, 40, 60);
   public static final Color colorPerturb = new Color(255, 130, 0);
 
-  // vector of Moveables
-  // final int IMAXINIT = (int)(0.001*RADIUS_M * 4 * Math.PI * DENS_MAX_INVKM +
-  // 10);
   final int IMAXINIT = 100;
   protected List<Moveable> street = new ArrayList<Moveable>(IMAXINIT);
 
-  // vector of data of Moveables for output (only model is missing)
-
-  public List<Double> positions = new ArrayList<Double>(IMAXINIT);
-  public List<Integer> lanes = new ArrayList<Integer>(IMAXINIT);
-
-  // additional vectors for output
-
-  private List<Double> distances = new ArrayList<Double>(IMAXINIT);
+  protected List<Double> positions = new ArrayList<Double>();
+  protected List<Integer> lanes = new ArrayList<Integer>();
+  protected List<Double> distances = new ArrayList<Double>();
 
   // longitudinal models;
   private MicroModel idmCar = new IDMCar();
@@ -111,8 +103,9 @@ public class MicroStreet implements Constants {
       double vNew = 10.0;
       for (int i = 0; i < nCars; i++) {
         int lane = (i % 2 == 0) ? 1 : 0;
-        street.add(i, new Car(getRoadLength() - (i + 1) * distance,
-            vNew, lane, getIdmCar(), polite, PKW_LENGTH_M, colorCar, i));
+        street.add(i, VehicleFactory.createVehicle(
+            getRoadLength() - (i + 1) * distance, vNew, lane,
+            getIdmCar(), polite, PKW_LENGTH_M, colorCar));
         Car temp_car = (Car) street.get(i);
         double rand = random.nextDouble() * 1.0;
         temp_car.tdelay = rand;
@@ -291,15 +284,14 @@ public class MicroStreet implements Constants {
 
     if (maxgap > mingap) {
       double rand = random.nextDouble() * 1.0;
-      int randInt = Math.abs(random.nextInt());
       MicroModel modelNew = (rand < perTr) ? getIdmTruck() : getIdmCar();
       LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
       double posNew = pos_maxgap + 0.5 * maxgap;
       double vNew = modelNew.Veq(0.5 * maxgap);
       double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
       Color colorNew = (rand < perTr) ? colorTruck : colorCar;
-      street.add(i_maxgap, new Car(posNew, vNew, lane_maxgap, modelNew,
-          changemodelNew, lNew, colorNew, randInt));
+      street.add(i_maxgap, VehicleFactory.createVehicle(posNew, vNew, lane_maxgap, modelNew, changemodelNew,
+          lNew, colorNew));
     }
 
   }
@@ -491,7 +483,6 @@ public class MicroStreet implements Constants {
             MicroModel carmodel = getIdmCar();
             MicroModel truckmodel = getIdmTruck();
             double rand = random.nextDouble() * 1.0;
-            int randInt = Math.abs(random.nextInt());
             MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
             LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
             double vNew = modelNew.Veq(space);
@@ -503,8 +494,8 @@ public class MicroStreet implements Constants {
             Color colorNew = (rand < perTr) ? colorTruck : colorCar;
 
             imax = street.size();
-            street.add(imax, new Car(0.0, vNew, lane, modelNew,
-                changemodelNew, lNew, colorNew, randInt));
+            street.add(imax, VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, changemodelNew,
+                lNew, colorNew));
           }
         }
 
@@ -514,7 +505,6 @@ public class MicroStreet implements Constants {
           MicroModel carmodel = getIdmCar();
           MicroModel truckmodel = getIdmTruck();
           double rand = random.nextDouble() * 1.0;
-          int randInt = Math.abs(random.nextInt());
           MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
           double vNew = modelNew.Veq(spaceFree);
           double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
@@ -522,8 +512,8 @@ public class MicroStreet implements Constants {
           int lane = (i_lu < 0) ? 0 : 1;
           imax = street.size();
           System.out.println("street.size()=" + street.size());
-          street.add(imax, new Car(0.0, vNew, lane, modelNew,
-              inconsiderate, lNew, colorNew, randInt));
+          street.add(imax, VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, inconsiderate,
+              lNew, colorNew));
         }
       }
     }

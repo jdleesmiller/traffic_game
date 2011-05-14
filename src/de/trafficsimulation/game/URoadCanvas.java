@@ -54,7 +54,9 @@ public class URoadCanvas extends SimCanvas {
   public void start() {
     
     this.street = new MicroStreet(getURoad().getRoadLengthMeters(),
-        density, p_factor, deltaB, MainFrame.SCENARIO_RING_ROAD);
+        density, p_factor, deltaB, MainFrame.SCENARIO_ON_RAMP);
+    System.out.println(getURoad().getRoadLengthMeters());
+    System.out.println(getOnRampRoad().getRoadLengthMeters());
     
     double mergingPos = Math.PI * RADIUS_M + STRAIGHT_RDLEN_M + 0.5 * L_RAMP_M;
     
@@ -105,14 +107,7 @@ public class URoadCanvas extends SimCanvas {
     g2.setTransform(txCopy);
     
     paintVehiclesOnStreet(g2, getURoad(), street);
-    
-    int numCars = onRamp.positions.size();
-    for (int i = 0; i < numCars; ++i) {
-      double position = onRamp.positions.get(i);
-      if (getOnRampRoad().transformForCarAt(g2, 0, position))
-        paintCar(g2);
-      g2.setTransform(txCopy);
-    }
+    paintVehiclesOnStreet(g2, getOnRampRoad(), onRamp);
   }
   
   private static ArrayList<RoadBase> makeRoads()
