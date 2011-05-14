@@ -20,23 +20,43 @@ public class URoadCanvas extends SimCanvas {
   private static final long serialVersionUID = 1L;
 
   private final Path2D.Double onRampEnd;
+  private final Rectangle2D.Double onRampBarrier;
+  private final Line2D.Double onRampEndLine;
   private final Line2D.Double onRampLine;
   
   public URoadCanvas() {
     super(makeRoads());
+    
     Rectangle2D rampBounds = getOnRampRoad().getBoundsMeters();
     
+    // triangle at the end of the on ramp
+    double rampEndLength = 2*LANEWIDTH_M;
     onRampEnd = new Path2D.Double();
     onRampEnd.moveTo(rampBounds.getMaxX() - 0.5, rampBounds.getMaxY());
-    onRampEnd.lineTo(rampBounds.getMaxX() + 2*LANEWIDTH_M, rampBounds.getMinY());
+    onRampEnd.lineTo(rampBounds.getMaxX() + rampEndLength,
+        rampBounds.getMinY());
     onRampEnd.lineTo(rampBounds.getMaxX() - 0.5, rampBounds.getMinY());
     onRampEnd.closePath();
     
+    // barrier at the end of the on ramp
+    onRampBarrier = new Rectangle2D.Double(
+        rampBounds.getMaxX() + 2,
+        rampBounds.getMinY() + 3,
+        1, LANEWIDTH_M - 6);
+    
+    // dashed line for the on ramp
     double mergePointPos = getOnRampRoad().getRoadLengthMeters() - L_RAMP_M;
     onRampLine = new Line2D.Double(
         rampBounds.getMinX() + mergePointPos,
         rampBounds.getMinY(),
         rampBounds.getMaxX(),
+        rampBounds.getMinY());
+    
+    // solid line at the end of the on ramp
+    onRampEndLine = new Line2D.Double(
+        rampBounds.getMaxX(),
+        rampBounds.getMinY(),
+        rampBounds.getMaxX() + rampEndLength - 4,
         rampBounds.getMinY());
   }
   
@@ -81,10 +101,17 @@ public class URoadCanvas extends SimCanvas {
     g2.setColor(ROAD_COLOR);
     g2.fill(onRampEnd);
     
-    // dashed line for the on ramp
+    // barrier at end of the on ramp
     g2.setColor(LANE_MARKER_COLOR);
+    g2.fill(onRampBarrier);
+    
+    // dashed line for the on ramp
     g2.setStroke(laneMarkerStroke);
     g2.draw(onRampLine);
+    
+    // solid line at the end of the on ramp
+    g2.setStroke(solidLaneMarkerStroke);
+    g2.draw(onRampEndLine);
   }
 
   @Override

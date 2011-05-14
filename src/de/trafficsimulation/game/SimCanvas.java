@@ -68,8 +68,11 @@ public abstract class SimCanvas extends JPanel implements Constants {
   /// how thick to make lane markers
   final static float LANE_MARKER_WIDTH_PX = 1f;
   
-  /// road marking stroke
+  /// road marking stroke for dashed lines
   Stroke laneMarkerStroke; 
+  
+  /// road marking stroke for solid lines
+  Stroke solidLaneMarkerStroke; 
   
   /// graphics transform
   AffineTransform metersToPixels;
@@ -162,10 +165,12 @@ public abstract class SimCanvas extends JPanel implements Constants {
     metersToPixels.scale(scale, scale);
     metersToPixels.translate(-bounds.getCenterX(), -bounds.getCenterY());
     
-    // the lane marker width is set in pixels, not meters
+    // the lane marker widths are set in pixels, not meters
     laneMarkerStroke = new BasicStroke((float)(LANE_MARKER_WIDTH_PX/scale),
         BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
         (float) LINELENGTH_M, laneMarkerDash, 0.0f);
+    solidLaneMarkerStroke = new BasicStroke((float)(LANE_MARKER_WIDTH_PX/scale),
+        BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
     
     repaint();
   }
