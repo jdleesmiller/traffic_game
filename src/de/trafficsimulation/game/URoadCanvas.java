@@ -1,41 +1,43 @@
 package de.trafficsimulation.game;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JFrame;
 
-import de.trafficsimulation.core.MicroStreet;
-import de.trafficsimulation.core.OnRamp;
 import de.trafficsimulation.road.RoadBase;
 import de.trafficsimulation.road.StraightRoad;
 import de.trafficsimulation.road.URoad;
 
 public class URoadCanvas extends SimCanvas {
   
-  protected MicroStreet street;
-  protected OnRamp onRamp;
+  private URoadSim sim;
   
-  // single mutable parameter at present
-  protected double qIn = Q_INIT2 / 3600.;
-  
-  // TODO figure out something to do with these...
-  protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
-  protected final double p_factor = 0.; // lanechanging: politeness factor
-  protected final double deltaB = 0.2; // lanechanging: changing threshold
-  protected final int floatcar_nr = 0;
-  protected final double p_factorRamp = 0.; // ramp Lanechange factor
-  protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
-  protected final double perTr = FRAC_TRUCK_INIT;
-  protected final double qRamp = QRMP_INIT2 / 3600.;
-    
   private static final long serialVersionUID = 1L;
 
+  private final Path2D.Double onRampEnd;
+  private final Line2D.Double onRampLine;
+  
   public URoadCanvas() {
     super(makeRoads());
+    Rectangle2D rampBounds = getOnRampRoad().getBoundsMeters();
+    
+    onRampEnd = new Path2D.Double();
+    onRampEnd.moveTo(rampBounds.getMaxX() - 0.5, rampBounds.getMaxY());
+    onRampEnd.lineTo(rampBounds.getMaxX() + 2*LANEWIDTH_M, rampBounds.getMinY());
+    onRampEnd.lineTo(rampBounds.getMaxX() - 0.5, rampBounds.getMinY());
+    onRampEnd.closePath();
+    
+    double mergePointPos = getOnRampRoad().getRoadLengthMeters() - L_RAMP_M;
+    onRampLine = new Line2D.Double(
+        rampBounds.getMinX() + mergePointPos,
+        rampBounds.getMinY(),
+        rampBounds.getMaxX(),
+        rampBounds.getMinY());
   }
   
   /** For testing */
@@ -52,62 +54,45 @@ public class URoadCanvas extends SimCanvas {
   
   @Override
   public void start() {
-    
-    this.street = new MicroStreet(getURoad().getRoadLengthMeters(),
-        density, p_factor, deltaB, MainFrame.SCENARIO_ON_RAMP);
-    System.out.println(getURoad().getRoadLengthMeters());
-    System.out.println(getOnRampRoad().getRoadLengthMeters());
-    
-    double mergingPos = Math.PI * RADIUS_M + STRAIGHT_RDLEN_M + 0.5 * L_RAMP_M;
-    
-    // the obstacle at the end is inserted at the end of the visible ramp
-    this.onRamp = new OnRamp(this.street,
-        getOnRampRoad().getRoadLengthMeters(), // the whole visible ramp
-        L_RAMP_M, mergingPos, p_factorRamp, deltaBRamp);
-    
+    sim = new URoadSim(new Random(42),
+        getURoad().getRoadLengthMeters(),
+        getOnRampRoad().getRoadLengthMeters());
     super.start();
   }
 
   @Override
   public void stop() {
     super.stop();
-    this.street = null;
-    this.onRamp = null;
+    sim = null;
   }
 
   @Override
   public void tick() {
-    if (this.street == null)
+    if (sim == null)
       return;
+    sim.tick();
+  }
+  
+  @Override
+  protected void paintRoads(Graphics2D g2) {
+    super.paintRoads(g2);
     
-    street.update(TIMESTEP_S, density, qIn, perTr, p_factor, deltaB);
-    onRamp.update(TIMESTEP_S, qRamp, perTr, p_factorRamp, deltaBRamp);
+    // triangle at the end of the on ramp
+    g2.setColor(ROAD_COLOR);
+    g2.fill(onRampEnd);
+    
+    // dashed line for the on ramp
+    g2.setColor(LANE_MARKER_COLOR);
+    g2.setStroke(laneMarkerStroke);
+    g2.draw(onRampLine);
   }
 
   @Override
   protected void paintVehicles(Graphics2D g2) {
-    if (this.street == null)
+    if (sim == null)
       return;
-    
-    AffineTransform txCopy = g2.getTransform();
-    
-    // BOUNDING BOXES
-    g2.setColor(Color.GREEN);
-    g2.draw(((URoad)getURoad()).getInputStraightRoad().getBoundsMeters());
-    g2.setColor(Color.BLUE);
-    g2.draw(((URoad)getURoad()).getOutputStraightRoad().getBoundsMeters());
-    g2.setColor(Color.CYAN);
-    g2.draw(((URoad)getURoad()).getCurveRoad().getBoundsMeters());
-    
-    // MERGE POINT TODO somewhere else
-    double mergePointPos = getOnRampRoad().getRoadLengthMeters() - L_RAMP_M;
-    getOnRampRoad().transformForCarAt(g2, 0, mergePointPos);
-    g2.setColor(Color.YELLOW);
-    g2.fill(new Rectangle2D.Double(0, 0, 5, 2));
-    g2.setTransform(txCopy);
-    
-    paintVehiclesOnStreet(g2, getURoad(), street);
-    paintVehiclesOnStreet(g2, getOnRampRoad(), onRamp);
+    paintVehiclesOnStreet(g2, getURoad(), sim.getStreet());
+    paintVehiclesOnStreet(g2, getOnRampRoad(), sim.getOnRamp());
   }
   
   private static ArrayList<RoadBase> makeRoads()
@@ -115,8 +100,8 @@ public class URoadCanvas extends SimCanvas {
     // the u section
     URoad uRoad = new URoad(2, LANEWIDTH_M, 0, 0, RADIUS_M, STRAIGHT_RDLEN_M);
     
-    // the on ramp
-    double rampY = uRoad.getBoundsMeters().getMaxY();
+    // the on ramp; overlap it slightly with the main road to avoid a gap
+    double rampY = uRoad.getBoundsMeters().getMaxY() - 0.5;
     double rampStartX = -50; // arbitrary
     double rampEndX = RADIUS_M + L_RAMP_M;
     StraightRoad onRampRoad = new StraightRoad(1, LANEWIDTH_M,
@@ -128,11 +113,20 @@ public class URoadCanvas extends SimCanvas {
     return roads;
   }
   
-  private RoadBase getURoad() {
+  /**
+   * 
+   * @return null unless running (i.e. unless start has been called and end
+   * has not)
+   */
+  public URoadSim getSim() {
+    return sim;
+  }
+  
+  public RoadBase getURoad() {
     return getRoads().get(0);
   }
   
-  private RoadBase getOnRampRoad() {
+  public RoadBase getOnRampRoad() {
     return getRoads().get(1);
   }
 }

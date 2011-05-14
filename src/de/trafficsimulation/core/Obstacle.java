@@ -13,17 +13,28 @@ public class Obstacle implements Moveable {
   // model necessary since obstacle=type "Moveable" and lane change checks
   // acceleration! influences 3 following locations labeld with xxx
 
-  public MicroModel model; // xxx
+  public MicroModel model;
 
   public MicroModel model() {
     return model;
-  } // xxx
+  }
 
   public Obstacle(double x, int lane, double length) {
     pos = x;
     this.lane = lane;
     this.length = length;
-    this.model = new IDMCar(); // xxx
+    this.model = new MicroModel() {
+      
+      @Override
+      public double calcAcc(Moveable bwd, Moveable vwd) {
+        return 0;
+      }
+      
+      @Override
+      public double Veq(double dx) {
+        return 0;
+      }
+    };
   }
 
   public void setPosition(double x) {

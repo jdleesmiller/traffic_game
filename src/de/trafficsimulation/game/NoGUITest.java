@@ -1,8 +1,8 @@
 package de.trafficsimulation.game;
 
+import java.util.Random;
+
 import de.trafficsimulation.core.Constants;
-import de.trafficsimulation.core.MicroStreet;
-import de.trafficsimulation.core.OnRamp;
 
 /**
  * Run the OnRamp scenario without the GUI.
@@ -12,49 +12,35 @@ import de.trafficsimulation.core.OnRamp;
  */
 public class NoGUITest implements Constants {
   
-  protected MicroStreet street;
-  protected OnRamp onRamp;
-  
-  // single mutable parameter at present
-  protected double qIn = Q_INIT2 / 3600.;
-  
-  // TODO figure out something to do with these...
-  protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
-  protected final double p_factor = 0.; // lanechanging: politeness factor
-  protected final double deltaB = 0.2; // lanechanging: changing threshold
-  protected final int floatcar_nr = 0;
-  protected final double p_factorRamp = 0.; // ramp Lanechange factor
-  protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
-  protected final double perTr = FRAC_TRUCK_INIT;
-  protected final double qRamp = QRMP_INIT2 / 3600.;
-  
-  public NoGUITest() {
-    double uRoadLengthMeters = 1176.9911184307753;
-    double onRampLengthMeters = 270.0;
-    
-    this.street = new MicroStreet(uRoadLengthMeters,
-        density, p_factor, deltaB, MainFrame.SCENARIO_RING_ROAD);
-    
-    double mergingPos = Math.PI * RADIUS_M + STRAIGHT_RDLEN_M + 0.5 * L_RAMP_M;
-    
-    // the obstacle at the end is inserted at the end of the visible ramp
-    this.onRamp = new OnRamp(this.street,
-        onRampLengthMeters, // the whole visible ramp
-        L_RAMP_M, mergingPos, p_factorRamp, deltaBRamp);
-  }
-  
-  public void run(int mins) {
-    double time = 0;
-    while (time < mins*60) {
-      street.update(TIMESTEP_S, density, qIn, perTr, p_factor, deltaB);
-      onRamp.update(TIMESTEP_S, qRamp, perTr, p_factorRamp, deltaBRamp);
-      time += TIMESTEP_S;
+  public static int runForNumCarsOut(
+      URoadSim sim, double statsStartTime, double statsDuration)
+  {
+    int numCarsOutInWarmup = -1;
+    double statsEndTime = statsStartTime + statsDuration;
+    while (sim.getTime() < statsEndTime) {
+      if (numCarsOutInWarmup < 0 && sim.getTime() > statsStartTime)
+        numCarsOutInWarmup = sim.getStreet().getNumCarsOut();
+      sim.tick();
     }
+    return sim.getStreet().getNumCarsOut() - numCarsOutInWarmup;
   }
   
-  public void sweepQIn(int mins) {
-    for (int i = 0; i < 100; ++i) {
-      
+  public static void sweepQIn(double statsStartTime, double statsDuration,
+      int numTrials, int numPoints) {
+    double uRoadLengthMeters = 1176.9911184307753;
+    double rampLengthMeters = 270.0;
+    
+    System.out.println("qIn\tnumCarsOut");
+    
+    Random random = new Random();
+    for (int trial = 0; trial < numTrials; ++trial) {
+      for (int point = 0; point < numPoints; ++point) {
+        URoadSim sim = new URoadSim(random,
+            uRoadLengthMeters, rampLengthMeters);
+        sim.qIn = ((double)point) * Q_MAX / 3600.0 / numPoints;
+        int numCarsOut = runForNumCarsOut(sim, statsStartTime, statsDuration);
+        System.out.println((sim.qIn * 3600.0) + "\t" + numCarsOut);
+      }
     }
   }
 
@@ -62,14 +48,22 @@ public class NoGUITest implements Constants {
    * @param args
    */
   public static void main(String[] args) {
-    int mins = 60;
+    double statsStartMins = 30;
+    double statsDurationMins = 60;
+    int numTrials = 10;
+    int numPoints = 100;
     
     if (args.length > 0)
-      mins = Integer.parseInt(args[0]);
+      statsStartMins = Double.parseDouble(args[0]);
+    if (args.length > 1)
+      statsDurationMins = Double.parseDouble(args[1]);
+    if (args.length > 2)
+      numTrials = Integer.parseInt(args[1]);
+    if (args.length > 3)
+      numPoints = Integer.parseInt(args[1]);
     
-    NoGUITest test = new NoGUITest();
     long startTime = System.currentTimeMillis();
-    test.run(mins);
+    sweepQIn(statsStartMins * 60, statsDurationMins * 60, numTrials, numPoints);
     long stopTime = System.currentTimeMillis();
     long runTime = stopTime - startTime;
     System.out.println("Run time: " + runTime + "ms");

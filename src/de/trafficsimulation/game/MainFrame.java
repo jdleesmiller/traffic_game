@@ -74,7 +74,8 @@ public class MainFrame extends JFrame implements Constants {
       @Override
       public void tick() {
         super.tick();
-        numCarsOutLabel.setText(String.format("%d", street.getNumCarsOut()));
+        numCarsOutLabel.setText(String.format("%d",
+            getSim().getStreet().getNumCarsOut()));
       }
     };
     canvasPanel.add(uRoadCanvas, "onRamp");
@@ -121,7 +122,7 @@ public class MainFrame extends JFrame implements Constants {
       @Override
       public void stateChanged(ChangeEvent e) {
         if (uRoadCanvas != null) {
-          uRoadCanvas.qIn = flowInSlider.getValue() / 3600.;
+          uRoadCanvas.getSim().qIn = flowInSlider.getValue() / 3600.;
         }
       }
     });

@@ -28,49 +28,24 @@ public class MicroStreet implements Constants {
 
   static final int LEFT = 0;
   static final int RIGHT = 1;
-
-  // ######## colors <martin nov07>
-
+  
   public static final Color colorCar = new Color(210, 0, 0);
   public static final Color colorTruck = new Color(40, 40, 60);
-  public static final Color colorPerturb = new Color(255, 130, 0);
 
-  final int IMAXINIT = 100;
-  protected List<Moveable> street = new ArrayList<Moveable>(IMAXINIT);
-
+  protected List<Moveable> street = new ArrayList<Moveable>();
   protected List<Double> positions = new ArrayList<Double>();
   protected List<Integer> lanes = new ArrayList<Integer>();
   protected List<Double> distances = new ArrayList<Double>();
 
-  // longitudinal models;
-  private MicroModel idmCar = new IDMCar();
-  private MicroModel idmTruck = new IDMTruck();
-
-  // lane-change models (p, db, smin, bsave)
-
-  // !!! truck (=> vw for better impl!)
-  protected LaneChange polite = new LaneChange(P_FACTOR_TRUCK, DB_TRUCK,
-      MAIN_SMIN, MAIN_BSAVE, BIAS_RIGHT_TRUCK);
-
-  // !!! car (=> vw for better impl!)
-  protected LaneChange inconsiderate = new LaneChange(P_FACTOR_CAR, DB_CAR,
-      MAIN_SMIN, MAIN_BSAVE, BIAS_RIGHT_CAR);
-
   // neighbours
-
   protected Moveable vL, vR, hL, hR;
 
   // can be modified interactively
 
-  // mt apr05: seed 42 eingefuehrt wie in 3dsim
-  protected Random random = new Random(42); // for truck perc. and veh. numbers
-  protected int choice_Szen;
-  private double roadLength; // length depends on choice_Szen
-  protected double uppos; // location where flow-conserving bottleneck begins
-
-  // time and simulation control
-
-  //protected double time;
+  protected final Random random;
+  protected final CarTruckFactory vehicleFactory;
+  protected final int choice_Szen;
+  private final double roadLength; // length depends on choice_Szen
 
   // Source: nin = integral of inflow mod 1
   protected double nin = 0.0;
@@ -78,65 +53,36 @@ public class MicroStreet implements Constants {
   // see getNumCarsOut
   private int numCarsOut;
 
-  public MicroStreet(double length, double density, double p_factor,
-      double deltaB, int choice_Szen) {
-    //time = 0;
-    setRoadLength(length);
-    uppos = 0.5 * getRoadLength();
+  public MicroStreet(Random random, CarTruckFactory vehicleFactory,
+      double length, double density, int choice_Szen) {
+    
+    this.random = random;
+    this.roadLength = length;
+    this.vehicleFactory = vehicleFactory;
     this.choice_Szen = choice_Szen;
-    inconsiderate.set_p(p_factor);
-    inconsiderate.set_db(deltaB);
-    int choice_Geom = ((choice_Szen == 1) || (choice_Szen == 6)) ? 0 : 1;
-    double mult = ((choice_Geom == 0) && CLOCKWISE) ? (-1) : 1;
-    double bias_right_truck = BIAS_RIGHT_TRUCK;
-    double bias_right_car = BIAS_RIGHT_CAR;
-    polite.set_biasRight(mult * bias_right_truck);
-    inconsiderate.set_biasRight(mult * bias_right_car);
 
-    System.out.println("MicroStreet(args) cstr: roadLength=" + getRoadLength());
+    //System.out.println("MicroStreet(args) cstr: roadLength=" + getRoadLength());
 
     // ### closed circle; free traffic or stop&go, depending on density
 
     if (choice_Szen == 1) {
       int nCars = (int) (density * getRoadLength() * 2.0);
       double distance = getRoadLength() / nCars;
-      double vNew = 10.0;
+      double initialGap = 2 * distance;
       for (int i = 0; i < nCars; i++) {
         int lane = (i % 2 == 0) ? 1 : 0;
-        street.add(i, VehicleFactory.createVehicle(
-            getRoadLength() - (i + 1) * distance, vNew, lane,
-            getIdmCar(), polite, PKW_LENGTH_M, colorCar));
-        Car temp_car = (Car) street.get(i);
-        double rand = random.nextDouble() * 1.0;
-        temp_car.tdelay = rand;
-        rand = random.nextDouble() * 1.0;
-        if (rand <= FRAC_TRUCK_INIT_CIRCLE) {
-          temp_car.setModel(getIdmTruck());
-          vNew = getIdmTruck().Veq(2.0 * distance);
-          temp_car.setVelocity(vNew);
-          temp_car.setLength(LKW_LENGTH_M);
-          temp_car.setColor(colorTruck);
-        } else {
-          vNew = getIdmCar().Veq(2.0 * distance);
-          temp_car.setVelocity(vNew);
-        }
+        Car newCar = vehicleFactory.createVehicle(random,
+            getRoadLength() - (i + 1) * distance, initialGap, lane);
+        newCar.tdelay = random.nextDouble();
+        // all cars and trucks are polite in this scenario
+        newCar.setLaneChange(vehicleFactory.getPoliteLaneChange());
+        street.add(i, newCar);
       }
-      street.get(0).setVelocity(0.5 * vNew);
+      street.get(0).setVelocity(0.5 * street.get(0).velocity());
     }
   }
 
   // ################# end constructor ##########################
-
-  // <martin nov07>
-  public void applyLocalPerturbation() {
-    int imax = street.size();
-    int i = 5 * imax / 6;
-    Moveable veh = street.get(i);
-    double vel = 0.1 * veh.velocity();
-    veh.setVelocity(vel);
-    veh.setColor(colorPerturb);
-    System.out.println("MicroStreet.applyLocalPert.: new velocity=" + vel);
-  }
 
   // make actual state available in form of vectors over all vehicles;
   // protected methods set public vectors to be used for graphical output
@@ -176,12 +122,9 @@ public class MicroStreet implements Constants {
     return temp;
   }
 
+  // TODO remove p_factor and deltaB
   public void update(double dt, double density, double qIn, double perTr,
       double p_factor, double deltaB) {
-
-    inconsiderate.set_p(p_factor);
-    polite.set_db(DB_TRUCK);
-    inconsiderate.set_db(DB_CAR);
     
     // choice_BC=0: per. BC; otherwise open BC
     int choice_BC = ((choice_Szen == 1) || (choice_Szen == 6)) ? 0 : 1;
@@ -215,11 +158,11 @@ public class MicroStreet implements Constants {
     int nCars_wished = (int) (density * getRoadLength() * 2.0);
     int nCars = positions.size();
     if (nCars_wished > nCars) {
-      System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
+      //System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
       insertOneVehicle(perTr);
     }
     if (nCars_wished < nCars) {
-      System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
+      //System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
       removeOneVehicle();
     }
   }
@@ -251,8 +194,8 @@ public class MicroStreet implements Constants {
       } else {
         nright++;
       }
-      System.out.println("i=" + i + " lane=" + me.lane() + " pos="
-          + (int) me.position());
+      //System.out.println("i=" + i + " lane=" + me.lane() + " pos="
+      //    + (int) me.position());
 
       double gap = distances.get(i);
       if (gap > maxgap) {
@@ -262,13 +205,13 @@ public class MicroStreet implements Constants {
     }
 
     if (nleft < 2) {
-      System.out.println("nleft<2!!!");
+      //System.out.println("nleft<2!!!");
       maxgap = getRoadLength();
       pos_maxgap = 0;
       lane_maxgap = LEFT;
       i_maxgap = nveh;
     } else if (nright < 2) {
-      System.out.println("nright<2!!!");
+      //System.out.println("nright<2!!!");
       maxgap = getRoadLength();
       pos_maxgap = 0;
       lane_maxgap = RIGHT;
@@ -277,21 +220,16 @@ public class MicroStreet implements Constants {
       pos_maxgap = positions.get(i_maxgap);
       lane_maxgap = lanes.get(i_maxgap);
     }
-    System.out.println("MicroStreet.insertOneVehicle: maxgap=" + (int) maxgap
-        + " index=" + i_maxgap + " pos=" + pos_maxgap + " lane=" + lane_maxgap);
+    //System.out.println("MicroStreet.insertOneVehicle: maxgap=" + (int) maxgap
+    //    + " index=" + i_maxgap + " pos=" + pos_maxgap + " lane=" + lane_maxgap);
 
     // insert vehicle if sufficient gap
 
     if (maxgap > mingap) {
-      double rand = random.nextDouble() * 1.0;
-      MicroModel modelNew = (rand < perTr) ? getIdmTruck() : getIdmCar();
-      LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
       double posNew = pos_maxgap + 0.5 * maxgap;
-      double vNew = modelNew.Veq(0.5 * maxgap);
-      double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
-      Color colorNew = (rand < perTr) ? colorTruck : colorCar;
-      street.add(i_maxgap, VehicleFactory.createVehicle(posNew, vNew, lane_maxgap, modelNew, changemodelNew,
-          lNew, colorNew));
+      street.add(i_maxgap, vehicleFactory.createVehicle(random,
+          posNew, 0.5*maxgap, lane_maxgap));
+      //LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
     }
 
   }
@@ -323,31 +261,31 @@ public class MicroStreet implements Constants {
     double downLeftVel = (i_ld > -1) ? street.get(i_ld).velocity() : getRoadLength();
     double downRightVel = (i_rd > -1) ? street.get(i_rd).velocity() : getRoadLength();
 
+    MicroModel carIDM = vehicleFactory.getCarIDM();
     if (choice_BC == 0) { // periodic BC
-
       street.add(0, new BCCar(upLeftPos + getRoadLength(), upLeftVel,
-          0, getIdmCar(), PKW_LENGTH_M));
+          0, carIDM, PKW_LENGTH_M));
       street.add(0, new BCCar(upRightPos + getRoadLength(),
-          upRightVel, 1, getIdmCar(), PKW_LENGTH_M));
+          upRightVel, 1, carIDM, PKW_LENGTH_M));
       int imax = street.size();
       street.add(imax, new BCCar(downLeftPos - getRoadLength(),
-          downLeftVel, 0, getIdmCar(), PKW_LENGTH_M));
+          downLeftVel, 0, carIDM, PKW_LENGTH_M));
       imax++;
       street.add(imax, new BCCar(downRightPos - getRoadLength(),
-          downRightVel, 1, getIdmCar(), PKW_LENGTH_M));
+          downRightVel, 1, carIDM, PKW_LENGTH_M));
     }
     if (choice_BC == 1) { // open BC
       double dx = 200.; // distance of the boundary cars
       street.add(0, new BCCar(downLeftPos + dx, downLeftVel, 0,
-          getIdmCar(), PKW_LENGTH_M));
+          carIDM, PKW_LENGTH_M));
       street.add(0, new BCCar(downRightPos + dx, downRightVel, 1,
-          getIdmCar(), PKW_LENGTH_M));
+          carIDM, PKW_LENGTH_M));
       int imax = street.size();
       street.add(imax, new BCCar(upLeftPos - dx, upLeftVel, 0,
-          getIdmCar(), PKW_LENGTH_M));
+          carIDM, PKW_LENGTH_M));
       imax = street.size();
       street.add(imax, new BCCar(upRightPos - dx, upRightVel, 1,
-          getIdmCar(), PKW_LENGTH_M));
+          carIDM, PKW_LENGTH_M));
     }
   }
 
@@ -477,43 +415,20 @@ public class MicroStreet implements Constants {
           int iPrev = lastIndexOnLane(lane); // index of previous vehicle
           double space = street.get(iPrev).position();
 
-          // enough space for new vehicle to enter? (!red)
-
-          if (!(space < spaceMin)) {
-            MicroModel carmodel = getIdmCar();
-            MicroModel truckmodel = getIdmTruck();
-            double rand = random.nextDouble() * 1.0;
-            MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
-            LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
-            double vNew = modelNew.Veq(space);
-            if (false) {
-              System.out.println("MicroStreet.ioFlow: "
-                  + ((rand < perTr) ? "Truck" : "Car") + ", vNew=" + vNew);
-            }
-            double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
-            Color colorNew = (rand < perTr) ? colorTruck : colorCar;
-
-            imax = street.size();
-            street.add(imax, VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, changemodelNew,
-                lNew, colorNew));
+          // enough space for new vehicle to enter?
+          if (space >= spaceMin) {
+            street.add(vehicleFactory.createVehicle(random, 0.0, space, lane));
           }
         }
 
         // at least one lane without vehicles
 
         else {
-          MicroModel carmodel = getIdmCar();
-          MicroModel truckmodel = getIdmTruck();
-          double rand = random.nextDouble() * 1.0;
-          MicroModel modelNew = (rand < perTr) ? truckmodel : carmodel;
-          double vNew = modelNew.Veq(spaceFree);
-          double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
-          Color colorNew = (rand < perTr) ? colorTruck : colorCar;
           int lane = (i_lu < 0) ? 0 : 1;
-          imax = street.size();
-          System.out.println("street.size()=" + street.size());
-          street.add(imax, VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, inconsiderate,
-              lNew, colorNew));
+          street.add(
+              vehicleFactory.createVehicle(random, 0.0, spaceFree, lane));
+          street.get(street.size() - 1).setLaneChange(
+              vehicleFactory.getInconsiderateLaneChange());
         }
       }
     }
@@ -622,30 +537,10 @@ public class MicroStreet implements Constants {
     hR = street.get(hr);
   }
 
-  public void setRoadLength(double roadLength) {
-    this.roadLength = roadLength;
-  }
-
   public double getRoadLength() {
     return roadLength;
   }
 
-  public void setIdmTruck(MicroModel idmTruck) {
-    this.idmTruck = idmTruck;
-  }
-
-  public MicroModel getIdmTruck() {
-    return idmTruck;
-  }
-
-  public void setIdmCar(MicroModel idmCar) {
-    this.idmCar = idmCar;
-  }
-
-  public MicroModel getIdmCar() {
-    return idmCar;
-  }
-  
   public List<Moveable> getStreet() {
     return street;
   }
@@ -658,5 +553,9 @@ public class MicroStreet implements Constants {
    */
   public int getNumCarsOut() {
     return numCarsOut;
+  }
+
+  public CarTruckFactory getVehicleFactory() {
+    return vehicleFactory;
   }
 }

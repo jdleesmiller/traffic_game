@@ -44,6 +44,12 @@ public abstract class SimCanvas extends JPanel implements Constants {
   protected final Shape carTemplate;
   protected final Shape carBumperTemplate;
   
+  protected final Shape truckTemplate;
+  protected final Shape truckBumperTemplate;
+  
+  protected static final Color ROAD_COLOR = Color.GRAY;
+  protected static final Color LANE_MARKER_COLOR = Color.WHITE;
+  
   /**
    * Target frame rate, in frames per (real) second.
    */
@@ -56,8 +62,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
   
   private Timer timer;
   
-  private double simTime = 0.0;
-
   /// road marking pattern
   final static float laneMarkerDash[] = {(float)LINELENGTH_M};
   
@@ -78,14 +82,13 @@ public abstract class SimCanvas extends JPanel implements Constants {
     for (RoadBase road : this.roads) {
       roadStrokes.add(new BasicStroke((float)(
         road.getNumLanes() * road.getLaneWidthMeters()),
-        BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
     }
     
     // set up timer for animation
     timer = new Timer((int) (1000 / TARGET_FPS), new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         tick();
-        simTime += TIMESTEP_S;
         repaint();
       }
     });
@@ -95,7 +98,12 @@ public abstract class SimCanvas extends JPanel implements Constants {
     carTemplate = new Rectangle2D.Double(
         -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M, VEH_WIDTH_M, PKW_LENGTH_M);
     carBumperTemplate = new Rectangle2D.Double(
-        -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M / 5, VEH_WIDTH_M, PKW_LENGTH_M / 5);
+        -VEH_WIDTH_M / 2.0, -1, VEH_WIDTH_M, 1);
+    
+    truckTemplate = new Rectangle2D.Double(
+        -VEH_WIDTH_M / 2.0, -LKW_LENGTH_M, VEH_WIDTH_M, LKW_LENGTH_M);
+    truckBumperTemplate = new Rectangle2D.Double(
+        -VEH_WIDTH_M / 2.0, -1, VEH_WIDTH_M, 1);
     
     // need to rescale when we're resized
     addComponentListener(new ComponentAdapter() {
@@ -107,7 +115,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
   }
   
   public void start() {
-    simTime = 0.0;
     timer.start();
   }
   
@@ -167,7 +174,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
 
   /**
    * TODO find somewhere to put this
-   * Note that it doesn't work for OnRamp
    * 
    * @param g2
    */
@@ -177,7 +183,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
     
     for (Moveable vehicle : street.getStreet()) {
       if (road.transformForCarAt(g2, vehicle.lane(), vehicle.position()))
-        paintCar(g2);
+        paintVehicle(vehicle, g2);
       g2.setTransform(txCopy);
     }
   }
@@ -192,44 +198,54 @@ public abstract class SimCanvas extends JPanel implements Constants {
     
     g2.transform(metersToPixels);
     
+    paintRoads(g2);
+    paintVehicles(g2);
+  }
+  
+  /**
+   * Paint roads and lane markers.
+   * 
+   * @param g2
+   */
+  protected void paintRoads(Graphics2D g2) {
     for (int i = 0; i < roads.size(); ++i) {
       RoadBase road = roads.get(i);
       Stroke roadStroke = roadStrokes.get(i);
       
-      g2.setColor(Color.GRAY);
+      g2.setColor(ROAD_COLOR);
       g2.setStroke(roadStroke);
       g2.draw(road.getRoadCenter());
       
-      g2.setColor(Color.WHITE);
+      g2.setColor(LANE_MARKER_COLOR);
       g2.setStroke(laneMarkerStroke);
       for (Shape marker : road.getLaneMarkers()) {
         g2.draw(marker);
       }
     }
-    
-    paintVehicles(g2);
   }
   
   /**
-   * Paint
+   * Paint a car or truck.
    * 
-   * TODO need to know color and whether it's a car or truck
+   * @param vehicle 
    * 
    * @param g2 not null
    */
-  public void paintCar(Graphics2D g2) {
-    g2.setColor(Color.WHITE);
-    g2.fill(carTemplate);
-    
-    // draw "bumper" at rear
-    g2.setColor(Color.RED);
-    g2.fill(carBumperTemplate);
-  }
-
-  /**
-   * @return the simTime
-   */
-  public double getSimTime() {
-    return simTime;
+  public void paintVehicle(Moveable vehicle, Graphics2D g2) {
+    if (vehicle.length() < PKW_LENGTH_M) {
+      // don't draw obstacles
+    } else if (vehicle.length() == LKW_LENGTH_M) {
+      g2.setColor(vehicle.color());
+      g2.fill(truckTemplate);
+      // draw "bumper" at rear
+      g2.setColor(Color.RED);
+      g2.fill(truckBumperTemplate);
+    } else {
+      g2.setColor(vehicle.color());
+      g2.fill(carTemplate);
+      // draw "bumper" at rear
+      g2.setColor(Color.RED);
+      g2.fill(carBumperTemplate);
+    }
   }
 }

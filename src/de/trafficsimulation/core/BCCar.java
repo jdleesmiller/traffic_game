@@ -70,10 +70,6 @@ public class BCCar implements Moveable {
     return this.color;
   }
 
-  public int NR() {
-    return 0;
-  }
-
   public boolean timeToChange(double dt) {
     return false;
   }

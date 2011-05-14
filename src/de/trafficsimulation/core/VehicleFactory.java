@@ -1,39 +1,17 @@
 package de.trafficsimulation.core;
 
-import java.awt.Color;
+import java.util.Random;
 
-public abstract class VehicleFactory {
+public interface VehicleFactory {
   
-//  private List<MicroModel> models;
-
+  /*
   public static Car createVehicle(double x, double v, int lane,
       MicroModel model, LaneChange lanechange, double length, Color color) {
     return new Car(x, v, lane, model, lanechange, length, color);
   }
+  */
 
-  public Car createVehicle(double position, double initialGap, int lane)
-  {
-    MicroModel microModel = getMicroModelForNewVehicle();
-    LaneChange laneChangeModel = getLaneChangeModelForNewVehicle();
-    
-    double initialSpeed = microModel.Veq(initialGap);
-    double length = 0;
-    Color color = Color.red;
-    
-    Car car = new Car(position, initialSpeed, lane, microModel,
-        laneChangeModel, length, color);
-    
-    return car;
-  }
-  
-  
-  public MicroModel getMicroModelForNewVehicle() {
-    return null;
-  }
-  
-  public LaneChange getLaneChangeModelForNewVehicle() {
-    return null;
-  }
+  public Car createVehicle(Random random, double position, double initialGap, int lane);
   
   /*
     if (choice_Szen == 1) {

@@ -57,16 +57,16 @@ public class LaneChange implements Constants {
     this.gapMin = gapMin;
     this.bsave = bsave;
     this.biasRight = biasRight;
-    System.out.println("Cstr of LaneChange(5 args): db=" + db + " bsave="
-        + bsave);
+    //System.out.println("Cstr of LaneChange(5 args): db=" + db + " bsave="
+    //    + bsave);
   }
 
   public LaneChange(double p, double db) {
     assert bsaveSelf <= MAX_BRAKING;
     this.p = p;
     this.db = db;
-    System.out.println("Cstr of LaneChange(5 args): db=" + db + " bsave="
-        + bsave);
+    //System.out.println("Cstr of LaneChange(5 args): db=" + db + " bsave="
+    //    + bsave);
   }
 
   public void set_p(double p) {
@@ -98,9 +98,13 @@ public class LaneChange implements Constants {
     // System.out.println("LaneChange.set_bsave: bsave="+bsave);
   }
 
-  public void set_biasRight(double bias) {
+  public void setBiasRight(double bias) {
     this.biasRight = bias;
     // System.out.println("LaneChange.set_biasRight: biasRight="+biasRight);
+  }
+  
+  public double getBiasRight() {
+    return biasRight;
   }
 
   public boolean changeOK(Moveable me, Moveable fOld, Moveable fNew,

@@ -3,9 +3,12 @@ package de.trafficsimulation.game;
 
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JFrame;
 
+import de.trafficsimulation.core.CarTruckFactory;
+import de.trafficsimulation.core.LaneChange;
 import de.trafficsimulation.core.MicroStreet;
 import de.trafficsimulation.road.ArcRoad;
 import de.trafficsimulation.road.RoadBase;
@@ -53,10 +56,21 @@ public class RingRoadCanvas extends SimCanvas {
   
   @Override
   public void start() {
+    // bias toward the left lane if flow is clockwise
+    CarTruckFactory vehicleFactory = new CarTruckFactory();
+    LaneChange lcPolite = vehicleFactory.getPoliteLaneChange();
+    LaneChange lcIncons = vehicleFactory.getInconsiderateLaneChange();
+    if (CLOCKWISE) {
+      lcPolite.setBiasRight(-lcPolite.getBiasRight());
+      lcIncons.setBiasRight(-lcIncons.getBiasRight());
+    }
     
-    this.street = new MicroStreet(
-        getRingRoad().getRoadLengthMeters(),
-        density, p_factor, deltaB, MainFrame.SCENARIO_RING_ROAD);
+    lcIncons.set_p(p_factor);
+    lcIncons.set_db(deltaB);
+    
+    this.street = new MicroStreet(new Random(42),
+        vehicleFactory,
+        getRingRoad().getRoadLengthMeters(), density, MainFrame.SCENARIO_RING_ROAD);
     
     super.start();
   }

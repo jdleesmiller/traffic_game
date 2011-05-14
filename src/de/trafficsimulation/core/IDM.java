@@ -83,9 +83,8 @@ public abstract class IDM implements MicroModel {
       }
       veqTab[is] = Ve;
     }
-    System.out.println("IDM.initialize():" + "  veqTab[0]=" + veqTab[0]
-        + ", veqTab[" + ismax + "]=" + veqTab[ismax]);
-
+    //System.out.println("IDM.initialize():" + "  veqTab[0]=" + veqTab[0]
+    //    + ", veqTab[" + ismax + "]=" + veqTab[ismax]);
   }
 
   // function for equilibrium velocity using above table; ve(s>ismax)=ve(ismax)

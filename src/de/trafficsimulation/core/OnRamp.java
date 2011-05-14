@@ -1,32 +1,24 @@
 package de.trafficsimulation.core;
 
-import java.awt.Color;
+import java.util.Random;
 
 public class OnRamp extends MicroStreet {
 
   private double rampLength;
-  // private double p_factorRamp;
-  // private double deltaBRamp;
-  // Lane-changing params to change to main
-  // once on main road, use mainroad.inconsiderate
-  private LaneChange laneChangeModel;
+  
   private double mergingPos;
   private MicroStreet mainroad;
   private Moveable me, frontVeh; // on on-ramp
   private Moveable frontVehMain, backVehMain; // on main road
   private int i_insertmain;
 
-  public OnRamp(MicroStreet mainroad, double totalLength, double rampLength,
-      double mergingPosAtMainroad, double p_factorRamp, double deltaBRamp) {
+  public OnRamp(Random random, CarTruckFactory vehicleFactory,
+      MicroStreet mainroad, double totalLength, double rampLength,
+      double mergingPosAtMainroad) {
 
-    super(totalLength, 0., p_factorRamp, deltaBRamp, 2);
+    super(random, vehicleFactory, totalLength, 0., 2);
     // -> roadlength=totalLength, choice_Szen=2,
-    // ramp-lanechanging parameters also in inconsiderate.b, -.db
-    // (not used)
-    laneChangeModel = new LaneChange(p_factorRamp, deltaBRamp);
 
-    // this.p_factorRamp = p_factorRamp;
-    // this.deltaBRamp = deltaBRamp;
     this.mainroad = mainroad;
     this.mergingPos = mergingPosAtMainroad; // centered (m)
     this.rampLength = rampLength; // (m)
@@ -35,23 +27,17 @@ public class OnRamp extends MicroStreet {
     street.add(new Obstacle(getRoadLength(), 0, 1.));
 
     // start with one car at the beginning
-    street.add(VehicleFactory.createVehicle(5., getIdmCar().Veq(getRoadLength()), 0, getIdmCar(), inconsiderate, PKW_LENGTH_M,
-        colorCar));
+    street.add(vehicleFactory.createCar(random, 5, getRoadLength(), 0));
   }
 
-  public void update(double dt, double qRamp, double perTr,
-      double p_factorRamp, double deltaBRamp) {
-
-    laneChangeModel.set_p(p_factorRamp);
-    laneChangeModel.set_db(deltaBRamp);
-
+  public void update(double dt, double qRamp, double perTr) {
     accelerate(dt);
     translate(dt);
-
+    
     positions = setPos();
-
+    
     inFlow(dt, qRamp, perTr);
-    mergeToMainRoad(laneChangeModel, mergingPos);
+    mergeToMainRoad(mergingPos);
   }
 
   protected void accelerate(double dt) {
@@ -66,17 +52,10 @@ public class OnRamp extends MicroStreet {
     }
   }
 
-  private void mergeToMainRoad(LaneChange laneChangeModel, double mergingPos) {
+  private void mergeToMainRoad(double mergingPos) {
 
     final double offsetMain = mergingPos - (getRoadLength() - 0.5 * rampLength);
     int imax = street.size() - 1;
-    int nvehmain = mainroad.street.size();
-
-    if (false) {
-      System.out.println("in mergeToMainRoad: " + "1 obstacle + " + (imax)
-          + " veh(s) on ramp, " + nvehmain + " on mainroad;" + " offset="
-          + (int) (offsetMain));
-    }
 
     if (imax >= 1) { // at least one real vehicle on the ramp lane
       for (int i = 1; i <= imax; i++) {
@@ -95,40 +74,24 @@ public class OnRamp extends MicroStreet {
           // positions are given in the ramp system!
 
           // do actual change if incentive criterion fulfilled
-          me.setLaneChange(laneChangeModel); // update lane-change params
           if (me.change(frontVeh, frontVehMain, backVehMain)) {
 
-            System.out.println(" mergeToMainRoad: Changing!!!\n "
-                + "  deltaBRamp=" + ((Car) me).lanechange.get_db()
-                + "  nvehmain=" + mainroad.street.size() + "  real veh ramp="
-                + (street.size() - 1));
+            //System.out.println(" mergeToMainRoad: Changing!!!\n "
+            //    + "  deltaBRamp=" + ((Car) me).lanechange.get_db()
+            //    + "  nvehmain=" + mainroad.street.size() + "  real veh ramp="
+            //    + (street.size() - 1));
 
             me.setLane(1); // right lane on future main road
             me.setPosition(me.position() + offsetMain);
-            me.setLaneChange(mainroad.inconsiderate);
+            me.setLaneChange(
+                mainroad.getVehicleFactory().getInconsiderateLaneChange());
             mainroad.street.add(i_insertmain, me);
             street.remove(i);
             imax--;
-
-            // System.out.println("  Changed!!! "
-            // + " nvehmain="+ mainroad.street.size()
-            // + " real veh ramp="+ imax);
           }
         }
       }
     }
-
-    /*
-     * System.out.println("End mergeToMainRoad:");
-     * System.out.println(" Vehicles on main road:"); for (int i=0;
-     * i<mainroad.street.size(); i++){ double pos = ((Moveable)
-     * mainroad.street.elementAt(i)).position();
-     * System.out.println("  i="+i+", pos="+pos); }
-     * System.out.println(" Vehicles on  on-ramp:"); for (int i=0;
-     * i<street.size(); i++){ double pos = ((Moveable)
-     * street.elementAt(i)).position();
-     * System.out.println("  i="+i+", pos="+pos); }
-     */
   }
 
   private void setNeighboursOnMainRoad(int i, double offsetMain) {
@@ -138,7 +101,7 @@ public class OnRamp extends MicroStreet {
     // i_insertmain at which car is considered to be placed on main road
 
     // boolean debug=(i==1);
-    boolean debug = false;
+    //boolean debug = false;
 
     final double farDistance = 10000 + offsetMain;
     double x = street.get(i).position();
@@ -159,21 +122,21 @@ public class OnRamp extends MicroStreet {
       for (imain = 0; ((imain < nvehmain) && (x < xmain)); imain++) {
         xmain = mainroad.street.get(imain).position() - offsetMain;
 
-        if (debug) {
-          System.out.println("OnRamp:setNeighbours..for loop: imain=" + imain
-              + " xmain=" + ((int) (xmain)) + " nvehmain=" + nvehmain);
-        }
+        //if (debug) {
+        //  System.out.println("OnRamp:setNeighbours..for loop: imain=" + imain
+        //      + " xmain=" + ((int) (xmain)) + " nvehmain=" + nvehmain);
+        //}
       }
 
       i_frontmain = imain - 1; // !!! imain-2
       i_backmain = imain - 0; // !!! imain-1
       i_insertmain = imain - 0; // !!! imain-1
 
-      if (debug) {
-        System.out.println("OnRamp:setNeighbours..: iramp=" + i
-            + "\ni_frontmain(either lane)=" + i_frontmain
-            + "\ni_backmain(either lane)=" + i_backmain);
-      }
+      //if (debug) {
+      //  System.out.println("OnRamp:setNeighbours..: iramp=" + i
+      //      + "\ni_frontmain(either lane)=" + i_frontmain
+      //      + "\ni_backmain(either lane)=" + i_backmain);
+      //}
 
       // determine front vehicle on right (sic!) main lane (right=0)
       // if no vheicle(s), i_frontmain=-1 and/or i_backmain=nvehmain
@@ -187,10 +150,10 @@ public class OnRamp extends MicroStreet {
             mainroad.street.get(i_frontmain).lane() : 1;
       }
 
-      if (debug) {
-        System.out.println("i_frontmain(right lane)=" + i_frontmain
-            + " lanemain=" + lanemain);
-      }
+      //if (debug) {
+      //  System.out.println("i_frontmain(right lane)=" + i_frontmain
+      //      + " lanemain=" + lanemain);
+      //}
 
       // determine back vehicle on right (sic!) main lane (right=0)
 
@@ -203,26 +166,26 @@ public class OnRamp extends MicroStreet {
             mainroad.street.get(i_backmain).lane() : 1;
       }
 
-      if (debug) {
-        System.out.println("i_backmain(right lane)=" + i_backmain
-            + " lanemain=" + lanemain);
-      }
+      //if (debug) {
+      //  System.out.println("i_backmain(right lane)=" + i_backmain
+      //      + " lanemain=" + lanemain);
+      //}
 
-      if (debug) {
-        if (i_frontmain == -1)
-          System.out
-              .println("OnRamp:setNeighbours: No front vehicle, but >=1 back veh!");
-        if (i_frontmain + 1 == nvehmain)
-          System.out
-              .println("OnRamp:setNeighbours: No back vehicle, but >=1 front veh!");
-      }
+      //if (debug) {
+      //  if (i_frontmain == -1)
+      //    System.out
+      //        .println("OnRamp:setNeighbours: No front vehicle, but >=1 back veh!");
+      //  if (i_frontmain + 1 == nvehmain)
+      //    System.out
+      //        .println("OnRamp:setNeighbours: No back vehicle, but >=1 front veh!");
+      //}
     }
 
     else { // nvehmain=0
-      if (debug) {
-        System.out.println("OnRamp:setNeighbours: nvehmain=" + nvehmain
-            + " => no vehicle on main road!");
-      }
+      //if (debug) {
+      //  System.out.println("OnRamp:setNeighbours: nvehmain=" + nvehmain
+      //      + " => no vehicle on main road!");
+      //}
       i_frontmain = -1;
       i_backmain = -1;
     }
@@ -232,28 +195,29 @@ public class OnRamp extends MicroStreet {
     // offset action below would offset streets on mainroad!
 
     frontVehMain = (i_frontmain < 0) // only back vehicle(s)
-    ? VehicleFactory.createVehicle(farDistance, 0, 0, getIdmCar(),
-        inconsiderate, 5, colorCar) : new Car((Car) (mainroad.street.get(i_frontmain)));
-
-    backVehMain = ((nvehmain < 1) || (i_backmain >= nvehmain)) ? VehicleFactory.createVehicle(-farDistance, 0, 0, getIdmCar(), inconsiderate, 5,
-        colorCar) : new Car(
-        (Car) (mainroad.street.get(i_backmain)));
-    if (debug) {
-      System.out.println(" setNeighboursOnMainRoad!!!:" + " nvehmain="
-          + nvehmain + " i_backmain=" + i_backmain + "x_back="
-          + backVehMain.position());
-    }
+        ? vehicleFactory.createCar(random, farDistance, 0, 0)
+        : new Car((Car) mainroad.street.get(i_frontmain));
+        
+    backVehMain = ((nvehmain < 1) || (i_backmain >= nvehmain))
+        ? vehicleFactory.createCar(random, -farDistance, 0, 0)
+        : new Car((Car) mainroad.street.get(i_backmain));
+        
+    //if (debug) {
+    //  System.out.println(" setNeighboursOnMainRoad!!!:" + " nvehmain="
+    //      + nvehmain + " i_backmain=" + i_backmain + "x_back="
+    //      + backVehMain.position());
+    //}
     // adjust positions to ramp system
 
     frontVehMain.setPosition(frontVehMain.position() - offsetMain);
     backVehMain.setPosition(backVehMain.position() - offsetMain);
 
-    if (debug) {
-      System.out.println(" setNeighboursOnMainRoad, got neighbours:"
-          + "\n   i_frontmain=" + i_frontmain + ", x_front="
-          + frontVehMain.position() + ", x_back=" + backVehMain.position()
-          + " offsetMain=" + offsetMain);
-    }
+    //if (debug) {
+    //  System.out.println(" setNeighboursOnMainRoad, got neighbours:"
+    //      + "\n   i_frontmain=" + i_frontmain + ", x_front="
+    //      + frontVehMain.position() + ", x_back=" + backVehMain.position()
+    //      + " offsetMain=" + offsetMain);
+    //}
   } // end setNeighboursOnMainRoad
 
   private void inFlow(double dt, double qIn, double perTr) {
@@ -278,14 +242,10 @@ public class OnRamp extends MicroStreet {
       // enough space for new vehicle to enter? (!red)
 
       if (!(space < spaceMin)) {
-        double rand = random.nextDouble() * 1.0;
-        MicroModel modelNew = (rand < perTr) ? getIdmTruck() : getIdmCar();
-        double vNew = modelNew.Veq(space);
-        double lNew = (rand < perTr) ? LKW_LENGTH_M : PKW_LENGTH_M;
-        Color colorNew = (rand < perTr) ? colorTruck : colorCar;
-
-        street.add(VehicleFactory.createVehicle(0.0, vNew, lane, modelNew, inconsiderate,
-            lNew, colorNew));
+        street.add(vehicleFactory.createVehicle(random, 0.0, space, lane));
+        // both cars and trucks are inconsiderate while on the on ramp
+        street.get(street.size() - 1).setLaneChange(
+            vehicleFactory.getInconsiderateLaneChange());
       }
     }
   }
