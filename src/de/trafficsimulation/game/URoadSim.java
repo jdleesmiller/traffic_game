@@ -3,21 +3,23 @@ package de.trafficsimulation.game;
 import java.util.Random;
 
 import de.trafficsimulation.core.CarTruckFactory;
-import de.trafficsimulation.core.Constants;
 import de.trafficsimulation.core.MicroStreet;
 import de.trafficsimulation.core.OnRamp;
 
-public class URoadSim implements Constants {
-  private final Random random;
+/**
+ * The 'on ramp' simulation.
+ * 
+ * This is a wrapper around MicroStreet (and OnRamp) that allows them to more
+ * easily interface with the GUI; it also handles the setting of parameters.
+ */
+public class URoadSim extends SimBase 
+{
   private final MicroStreet street;
   private final OnRamp onRamp;
-  
-  private double time = 0.0;
   
   // single mutable parameter at present
   protected double qIn = Q_INIT2 / 3600.;
   
-  // TODO figure out something to do with these...
   protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
   protected final double p_factor = 0.; // lanechanging: politeness factor
   protected final double deltaB = 0.2; // lanechanging: changing threshold
@@ -33,8 +35,7 @@ public class URoadSim implements Constants {
    * @param rampLengthMeters the whole visible length of the ramp
    */
   public URoadSim(Random random, double uRoadLengthMeters, double rampLengthMeters) {
-    this.random = random;
-    this.time = 0;
+    super(random);
     
     CarTruckFactory mainVehicleFactory = new CarTruckFactory();
     mainVehicleFactory.setTruckProbability(perTr);
@@ -42,7 +43,7 @@ public class URoadSim implements Constants {
     mainVehicleFactory.getInconsiderateLaneChange().set_db(deltaB);
     
     this.street = new MicroStreet(random, mainVehicleFactory,
-        uRoadLengthMeters, density, MainFrame.SCENARIO_ON_RAMP);
+        uRoadLengthMeters, density, 2);
     
     CarTruckFactory rampVehicleFactory = new CarTruckFactory();
     rampVehicleFactory.setTruckProbability(perTr);
@@ -56,10 +57,11 @@ public class URoadSim implements Constants {
         rampLengthMeters, L_RAMP_M, mergingPos);
   }
   
+  @Override
   public void tick() {
-    getStreet().update(TIMESTEP_S, density, qIn, perTr, p_factor, deltaB);
+    getStreet().update(TIMESTEP_S, density, qIn, perTr);
     getOnRamp().update(TIMESTEP_S, qRamp, perTr);
-    time += TIMESTEP_S;
+    super.tick();
   }
 
   /**
@@ -74,19 +76,5 @@ public class URoadSim implements Constants {
    */
   public OnRamp getOnRamp() {
     return onRamp;
-  }
-  
-  /**
-   * @return time at the end of the last tick, in simulated seconds
-   */
-  public double getTime() {
-    return time;
-  }
-
-  /**
-   * @return not null; the random number generator
-   */
-  public Random getRandom() {
-    return random;
   }
 }

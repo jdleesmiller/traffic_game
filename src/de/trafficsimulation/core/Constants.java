@@ -7,7 +7,7 @@ package de.trafficsimulation.core;
  * truck percentage etc) by simply changing some numbers here and recompiling.
  */
 
-public interface Constants { // MicroApplet3_0
+public interface Constants {
 
   static final boolean CLOCKWISE = true; // car movement in ring geometry
   static final double TIMESTEP_S = 0.25; // simulation time step
@@ -93,7 +93,7 @@ public interface Constants { // MicroApplet3_0
 
   // Geometric simulation constants
 
-  static final double STRAIGHT_RDLEN_M = 400.;
+  static final double STRAIGHT_RDLEN_M = 300.;
   static final double RADIUS_M = 120.; // of circular road sections
   static final double L_RAMP_M = 100.; // length of on ramp
   static final double L_STRAIGHT_M = 200.; // of straight sections of U

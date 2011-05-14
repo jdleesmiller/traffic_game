@@ -5,7 +5,7 @@ import java.util.Random;
 import de.trafficsimulation.core.Constants;
 
 /**
- * Run the OnRamp scenario without the GUI.
+ * Run the 'on ramp' simulation without the GUI for data collection.
  * 
  * Preliminary timings are about 1s real time per 30 minutes of simulated time
  * on my laptop on Linux under VMWare.
@@ -58,9 +58,9 @@ public class NoGUITest implements Constants {
     if (args.length > 1)
       statsDurationMins = Double.parseDouble(args[1]);
     if (args.length > 2)
-      numTrials = Integer.parseInt(args[1]);
+      numTrials = Integer.parseInt(args[2]);
     if (args.length > 3)
-      numPoints = Integer.parseInt(args[1]);
+      numPoints = Integer.parseInt(args[3]);
     
     long startTime = System.currentTimeMillis();
     sweepQIn(statsStartMins * 60, statsDurationMins * 60, numTrials, numPoints);

@@ -7,31 +7,17 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
-import de.trafficsimulation.core.CarTruckFactory;
-import de.trafficsimulation.core.LaneChange;
-import de.trafficsimulation.core.MicroStreet;
 import de.trafficsimulation.road.ArcRoad;
 import de.trafficsimulation.road.RoadBase;
 
 /**
- * Draw ring road and vehicles.
+ * Animation for the 'on ramp' simulation.
  */
 public class RingRoadCanvas extends SimCanvas {
-
-  private MicroStreet street;
   
   private static final long serialVersionUID = 1L;
   
-  // TODO figure out something to do with these...
-  protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
-  protected final double p_factor = 0.; // lanechanging: politeness factor
-  protected final double deltaB = 0.2; // lanechanging: changing threshold
-  protected final int floatcar_nr = 0;
-  protected final double p_factorRamp = 0.; // ramp Lanechange factor
-  protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
-  protected final double perTr = FRAC_TRUCK_INIT;
-  protected final double qRamp = QRMP_INIT2 / 3600.;
-  protected final double qIn = Q_INIT2;
+  private RingRoadSim sim; 
   
   /**
    * Constructor.
@@ -56,46 +42,29 @@ public class RingRoadCanvas extends SimCanvas {
   
   @Override
   public void start() {
-    // bias toward the left lane if flow is clockwise
-    CarTruckFactory vehicleFactory = new CarTruckFactory();
-    LaneChange lcPolite = vehicleFactory.getPoliteLaneChange();
-    LaneChange lcIncons = vehicleFactory.getInconsiderateLaneChange();
-    if (CLOCKWISE) {
-      lcPolite.setBiasRight(-lcPolite.getBiasRight());
-      lcIncons.setBiasRight(-lcIncons.getBiasRight());
-    }
-    
-    lcIncons.set_p(p_factor);
-    lcIncons.set_db(deltaB);
-    
-    this.street = new MicroStreet(new Random(42),
-        vehicleFactory,
-        getRingRoad().getRoadLengthMeters(), density, MainFrame.SCENARIO_RING_ROAD);
-    
+    sim = new RingRoadSim(new Random(42),
+        getRingRoad().getRoadLengthMeters());
     super.start();
   }
 
   @Override
   public void stop() {
     super.stop();
-    this.street = null;
+    sim = null;
   }
 
   @Override
   public void tick() {
-    if (street == null)
+    if (sim == null)
       return;
-    
-    street.update(TIMESTEP_S, density, qIn,
-        perTr, p_factor, deltaB);
+    sim.tick();
   }
 
   @Override
   protected void paintVehicles(Graphics2D g2) {
-    if (street == null)
+    if (sim == null)
       return;
-    
-    paintVehiclesOnStreet(g2, getRingRoad(), street);
+    paintVehiclesOnStreet(g2, getRingRoad(), sim.getStreet());
   }
   
   private static ArrayList<RoadBase> makeRoads() {
@@ -106,5 +75,15 @@ public class RingRoadCanvas extends SimCanvas {
   
   public ArcRoad getRingRoad() {
     return (ArcRoad)this.roads.get(0);
+  }
+  
+  /**
+   * The simulation behind the animation. 
+   * 
+   * @return null unless running (i.e. unless start has been called and end
+   * has not)
+   */
+  public RingRoadSim getSim() {
+    return sim;
   }
 }

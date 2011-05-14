@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -26,8 +27,8 @@ import de.trafficsimulation.core.Moveable;
 import de.trafficsimulation.road.RoadBase;
 
 /**
- * Handles the clock for 
- * 
+ * Base class for simulation animation (with a timer); draws roads and
+ * vehicles. Subclasses draw specific roads and vehicles as required.
  */
 public abstract class SimCanvas extends JPanel implements Constants {
   
@@ -55,11 +56,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
    */
   private static final double TARGET_FPS = 20;
 
-  /**
-   * Error tolerance for dealing with times.
-   */
-  //private static final double EPSILON = 0.0001;
-  
   private Timer timer;
   
   /// road marking pattern
@@ -148,6 +144,11 @@ public abstract class SimCanvas extends JPanel implements Constants {
     int width = getWidth();
     int height = getHeight();
     
+    // subtract off border, if we have one
+    Insets insets = getInsets();
+    width -= insets.left + insets.right;
+    height -= insets.top + insets.bottom;
+    
     metersToPixels = new AffineTransform();
     Rectangle2D bounds = this.getBoundsMeters();
     
@@ -161,7 +162,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
     }
     
     // set the metersToPixel transform so the road fits into the window
-    metersToPixels.translate(width / 2, height / 2);
+    metersToPixels.translate(insets.left + width / 2, insets.top + height / 2);
     metersToPixels.scale(scale, scale);
     metersToPixels.translate(-bounds.getCenterX(), -bounds.getCenterY());
     
@@ -178,8 +179,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
   protected abstract void paintVehicles(Graphics2D g2);
 
   /**
-   * TODO find somewhere to put this
-   * 
    * @param g2
    */
   protected void paintVehiclesOnStreet(Graphics2D g2,
@@ -197,7 +196,10 @@ public abstract class SimCanvas extends JPanel implements Constants {
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     
-    Graphics2D g2 = (Graphics2D) g;
+    // note: we have to do our drawing on a copy of the original graphics
+    // object, in order to preserve the transform etc. for other components
+    // that need to draw themselves after us (that is, child components).
+    Graphics2D g2 = (Graphics2D) g.create();
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON);
     

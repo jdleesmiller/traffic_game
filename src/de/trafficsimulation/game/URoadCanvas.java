@@ -13,6 +13,9 @@ import de.trafficsimulation.road.RoadBase;
 import de.trafficsimulation.road.StraightRoad;
 import de.trafficsimulation.road.URoad;
 
+/**
+ * Animation for the 'on ramp' simulation.
+ */
 public class URoadCanvas extends SimCanvas {
   
   private URoadSim sim;
@@ -129,7 +132,7 @@ public class URoadCanvas extends SimCanvas {
     
     // the on ramp; overlap it slightly with the main road to avoid a gap
     double rampY = uRoad.getBoundsMeters().getMaxY() - 0.5;
-    double rampStartX = -50; // arbitrary
+    double rampStartX = -30; // arbitrary
     double rampEndX = RADIUS_M + L_RAMP_M;
     StraightRoad onRampRoad = new StraightRoad(1, LANEWIDTH_M,
         rampStartX, rampY, rampEndX, rampY);
@@ -141,6 +144,7 @@ public class URoadCanvas extends SimCanvas {
   }
   
   /**
+   * The simulation behind the animation. 
    * 
    * @return null unless running (i.e. unless start has been called and end
    * has not)

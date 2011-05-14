@@ -122,9 +122,7 @@ public class MicroStreet implements Constants {
     return temp;
   }
 
-  // TODO remove p_factor and deltaB
-  public void update(double dt, double density, double qIn, double perTr,
-      double p_factor, double deltaB) {
+  public void update(double dt, double density, double qIn, double perTr) {
     
     // choice_BC=0: per. BC; otherwise open BC
     int choice_BC = ((choice_Szen == 1) || (choice_Szen == 6)) ? 0 : 1;
