@@ -61,36 +61,40 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   private final static int SIM_ROWS = 2;
   private final static int SIM_COLS = 2;
   
+  /**
+   * Time steps per frame drawn for the visible sims. This makes them look like
+   * they're going very fast.
+   */
   private final static int TIME_STEPS_PER_FRAME = 8;
   
   /**
    * Number of independent sim runs to do in the background.
    */
-  private static final int NUM_BACKGROUND_SIMS = 5;
+  private static final int NUM_BACKGROUND_SIMS = 10;
   
   /**
    * Warmup period for each sim, in seconds. Stats are not collected during the
    * warmup period.
    */
-  private static final double BACKGROUND_SIM_WARMUP_SECONDS = 5*60;
+  private static final double BACKGROUND_SIM_WARMUP_SECONDS = 15*60;
   
   /**
    * Total run time for each sim, in seconds. This should be larger than
    * BACKGROUND_SIM_WARMUP_SECONDS, or no results will be collected.
    */
-  private static final double BACKGROUND_SIM_TOTAL_SECONDS = 10*60;
+  private static final double BACKGROUND_SIM_TOTAL_SECONDS = 30*60;
   
   /**
    * Each background sim publishes its progress after this many seconds, so
    * we can tell the user how much longer they have to wait.
    */
-  private static final int BACKGROUND_SIM_UPDATE_TICKS = 100;
+  private static final int BACKGROUND_SIM_UPDATE_TICKS = 500;
 
   /**
    * Maximum number of sims to run concurrently in the background; keep in mind
    * that the GUI also uses (effectively) one thread.
    */
-  private static final int NUM_BACKGROUND_SIM_THREADS = 1;
+  private static final int NUM_BACKGROUND_SIM_THREADS = 2;
 
   /**
    * Update the sim progress meter this often.
