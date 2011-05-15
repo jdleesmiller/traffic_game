@@ -64,8 +64,8 @@ public abstract class IntroPanel extends JPanel {
    * Start the sims (eye candy).
    */
   public void start() {
-    ringRoadCanvas.start();
-    uRoadCanvas.start();
+    ringRoadCanvas.start(42);
+    uRoadCanvas.start(42);
   }
 
   /**

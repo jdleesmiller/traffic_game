@@ -37,14 +37,14 @@ public class RingRoadCanvas extends SimCanvas {
     SimCanvas c = new RingRoadCanvas();
     f.add(c);
     f.setVisible(true);
-    c.start();
+    c.start(42);
   }
   
   @Override
-  public void start() {
-    sim = new RingRoadSim(new Random(42),
-        getRingRoad().getRoadLengthMeters());
-    super.start();
+  public void start(long seed) {
+    Random random = (seed == -1L) ? new Random() : new Random(seed);
+    sim = new RingRoadSim(random, getRingRoad().getRoadLengthMeters());
+    super.start(seed);
   }
 
   @Override

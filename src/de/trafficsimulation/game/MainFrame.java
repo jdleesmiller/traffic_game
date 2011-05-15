@@ -29,10 +29,12 @@ public class MainFrame extends JFrame implements Constants {
   
   private static final String INTRO_CARD = "intro";
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
- 
+  private static final String FLOW_GAME_GAME_CARD = "flow_game";
+
   private final CardLayout cardLayout;
   private final IntroPanel introPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
+  private final URoadGamePanel flowGamePanel;
 
   /*
   private final JPanel canvasPanel;
@@ -68,13 +70,37 @@ public class MainFrame extends JFrame implements Constants {
       
       @Override
       public void playFlowGame() {
-        // TODO Auto-generated method stub
+        showFlowGame();
       }
     }; 
     add(introPanel, INTRO_CARD);
     
-    ringRoadGamePanel = new RingRoadGamePanel();
+    //
+    // ring road game card
+    //
+    ringRoadGamePanel = new RingRoadGamePanel() {
+      private static final long serialVersionUID = 1L;
+      
+      @Override
+      public void goBack() {
+        showIntro();
+      }
+    };
     add(ringRoadGamePanel, RING_ROAD_GAME_CARD);
+    
+    //
+    // flow game card
+    //
+    flowGamePanel = new URoadGamePanel() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void goBack() {
+        showIntro();
+      }
+    };
+    add(flowGamePanel, FLOW_GAME_GAME_CARD);
+    
     /*
     
     JPanel controlPanel = new JPanel();
@@ -167,6 +193,7 @@ public class MainFrame extends JFrame implements Constants {
   private void stopAll() {
     introPanel.stop();
     ringRoadGamePanel.stop();
+    flowGamePanel.stop();
   }
   
   private void showIntro() {
@@ -179,6 +206,12 @@ public class MainFrame extends JFrame implements Constants {
     stopAll();
     cardLayout.show(getContentPane(), RING_ROAD_GAME_CARD);
     ringRoadGamePanel.start();
+  }
+  
+  private void showFlowGame() {
+    stopAll();
+    cardLayout.show(getContentPane(), FLOW_GAME_GAME_CARD);
+    flowGamePanel.start();
   }
   
   /**

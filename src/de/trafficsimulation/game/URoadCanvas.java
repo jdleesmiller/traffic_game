@@ -72,17 +72,21 @@ public class URoadCanvas extends SimCanvas {
     SimCanvas c = new URoadCanvas();
     f.add(c);
     f.setVisible(true);
-    c.start();
+    c.start(42);
   }
   
+  /**
+   * Start the simulation.
+   */
   @Override
-  public void start() {
-    sim = new URoadSim(new Random(42),
+  public void start(long seed) {
+    Random random = (seed == -1L) ? new Random() : new Random(seed);
+    sim = new URoadSim(random,
         getURoad().getRoadLengthMeters(),
         getOnRampRoad().getRoadLengthMeters());
-    super.start();
+    super.start(seed);
   }
-
+  
   @Override
   public void stop() {
     super.stop();

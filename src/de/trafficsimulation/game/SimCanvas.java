@@ -34,13 +34,22 @@ public abstract class SimCanvas extends JPanel implements Constants {
   
   private static final long serialVersionUID = 1L;
   
+  private int timeStepsPerFrame;
+  
+  private final Timer timer;
+    
   protected final List<RoadBase> roads;
   
   protected final List<Stroke> roadStrokes;
   
   /**
-   * Car with rear bumper at the origin, driving north (negative y-axis,
-   * in the display's coordinates).
+   * Target display frame rate, in frames per (real) second.
+   */
+  public static final int TARGET_FPS = 20;
+  
+  /**
+   * Car with center at the origin, driving north (negative y-axis, in the
+   * display's coordinates).
    */
   protected final Shape carTemplate;
   protected final Shape carBumperTemplate;
@@ -50,18 +59,6 @@ public abstract class SimCanvas extends JPanel implements Constants {
   
   protected static final Color ROAD_COLOR = Color.GRAY;
   protected static final Color LANE_MARKER_COLOR = Color.WHITE;
-  
-  /**
-   * Target display frame rate, in frames per (real) second.
-   */
-  private static final double TARGET_FPS = 20;
-  
-  /**
-   * See getTimeStepsPerFrame.
-   */
-  private int timeStepsPerFrame = 1;
-
-  private Timer timer;
   
   /// road marking pattern
   final static float laneMarkerDash[] = {(float)LINELENGTH_M};
@@ -79,6 +76,18 @@ public abstract class SimCanvas extends JPanel implements Constants {
   AffineTransform metersToPixels;
   
   public SimCanvas(List<RoadBase> roads) {
+    super(true); // double buffer
+    
+    this.timeStepsPerFrame = 1;
+    
+    this.timer = new Timer(1000 / TARGET_FPS, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        for (int i = 0; i < timeStepsPerFrame; ++i)
+          tick();
+        repaint();
+      }
+    });
+    
     this.roads = Collections.unmodifiableList(roads);
     
     // create strokes used to draw the road surfaces
@@ -89,26 +98,16 @@ public abstract class SimCanvas extends JPanel implements Constants {
         BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
     }
     
-    // set up timer for animation
-    timer = new Timer((int) (1000 / TARGET_FPS), new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        for (int i = 0; i < getTimeStepsPerFrame(); ++i)
-          tick();
-        repaint();
-      }
-    });
-    timer.setCoalesce(true);
-    
     // build car templates; we just rotate and translate it to draw
     carTemplate = new Rectangle2D.Double(
-        -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M, VEH_WIDTH_M, PKW_LENGTH_M);
+        -VEH_WIDTH_M / 2.0, -PKW_LENGTH_M/2.0, VEH_WIDTH_M, PKW_LENGTH_M);
     carBumperTemplate = new Rectangle2D.Double(
-        -VEH_WIDTH_M / 2.0, -1, VEH_WIDTH_M, 1);
+        -VEH_WIDTH_M / 2.0, PKW_LENGTH_M/2.0-1, VEH_WIDTH_M, 1);
     
     truckTemplate = new Rectangle2D.Double(
-        -VEH_WIDTH_M / 2.0, -LKW_LENGTH_M, VEH_WIDTH_M, LKW_LENGTH_M);
+        -VEH_WIDTH_M / 2.0, -LKW_LENGTH_M/2.0, VEH_WIDTH_M, LKW_LENGTH_M);
     truckBumperTemplate = new Rectangle2D.Double(
-        -VEH_WIDTH_M / 2.0, -1, VEH_WIDTH_M, 1);
+        -VEH_WIDTH_M / 2.0, LKW_LENGTH_M/2.0-1, VEH_WIDTH_M, 1);
     
     // need to rescale when we're resized
     addComponentListener(new ComponentAdapter() {
@@ -119,16 +118,39 @@ public abstract class SimCanvas extends JPanel implements Constants {
     });
   }
   
-  public void start() {
+  /**
+   * Start simulation with given seed.
+   * 
+   * @param seed -1 for time-dependent seed
+   */
+  public void start(long seed) {
     timer.start();
   }
   
+  /**
+   * Start with a time-dependent seed.
+   */
+  public void start() {
+    this.start(-1L);
+  }
+
+  /**
+   * Stop the simulation timer.
+   */
   public void stop() {
     timer.stop();
   }
   
+  /**
+   * Advance simulation by one time step.
+   */
   public abstract void tick();
   
+  /**
+   * The roads that are drawn on this canvas.
+   * 
+   * @return not null; not empty
+   */
   public List<RoadBase> getRoads() {
     return roads;
   }
@@ -182,6 +204,11 @@ public abstract class SimCanvas extends JPanel implements Constants {
     repaint();
   }
   
+  /**
+   * Subclasses override this to paint the vehicles on their particular roads.
+   * 
+   * @param g2
+   */
   protected abstract void paintVehicles(Graphics2D g2);
 
   /**
@@ -192,7 +219,10 @@ public abstract class SimCanvas extends JPanel implements Constants {
     AffineTransform txCopy = g2.getTransform();
     
     for (Moveable vehicle : street.getStreet()) {
-      if (road.transformForCarAt(g2, vehicle.lane(), vehicle.position()))
+      // vehicle position is measured to the rear bumper in the sim, but we get
+      // better results visually if we use the vehicle center 
+      if (road.transformForCar(g2,
+          vehicle.position() + vehicle.length() / 2.0, vehicle.lane()))
         paintVehicle(vehicle, g2);
       g2.setTransform(txCopy);
     }
