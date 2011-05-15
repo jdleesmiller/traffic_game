@@ -551,6 +551,14 @@ public class MicroStreet implements Constants {
   public int getNumCarsOut() {
     return numCarsOut;
   }
+  
+  /**
+   * Reset numCarsOut to zero; this is useful if you want to discard some
+   * time at the start of a simulation.
+   */
+  public void resetNumCarsOut() {
+    numCarsOut = 0;
+  }
 
   public CarTruckFactory getVehicleFactory() {
     return vehicleFactory;

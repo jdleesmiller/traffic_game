@@ -1,11 +1,8 @@
 package de.trafficsimulation.game;
 
-
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javax.swing.JFrame;
 
 import de.trafficsimulation.road.ArcRoad;
 import de.trafficsimulation.road.RoadBase;
@@ -27,17 +24,6 @@ public class RingRoadCanvas extends SimCanvas {
   public RingRoadCanvas()
   {
     super(makeRoads());
-  }
-  
-  /** For testing */
-  public static void main(String [] args) {
-    JFrame f = new JFrame("ring test");
-    f.setSize(640,480);
-    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    SimCanvas c = new RingRoadCanvas();
-    f.add(c);
-    f.setVisible(true);
-    c.start(42);
   }
   
   @Override
