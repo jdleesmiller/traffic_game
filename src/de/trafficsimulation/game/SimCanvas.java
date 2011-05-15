@@ -116,6 +116,9 @@ public abstract class SimCanvas extends JPanel implements Constants {
         handleResize();
       }
     });
+    
+    // call once to initialise
+    handleResize();
   }
   
   /**
