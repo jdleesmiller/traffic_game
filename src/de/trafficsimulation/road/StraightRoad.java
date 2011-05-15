@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import static de.trafficsimulation.game.Utility.*;
 
 /**
@@ -61,14 +62,15 @@ public class StraightRoad extends RoadBase {
   }
 
   @Override
-  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
+  public boolean transformForCar(Graphics2D g2,
+      double centerPosition, int lane) {
     double dy = insideLine.getY2() - insideLine.getY1();
     double dx = insideLine.getX2() - insideLine.getX1();
     double theta = Math.atan2(dy, dx);
     
     g2.translate(insideLine.getX1(), insideLine.getY1());
     g2.rotate(theta + Math.PI/2);
-    g2.translate((lane + 0.5) * getLaneWidthMeters(), -position);
+    g2.translate((lane + 0.5) * getLaneWidthMeters(), -centerPosition);
     
     return true;
   }

@@ -5,6 +5,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
+
 /**
  * Base class for a road or collection of roads.
  */
@@ -71,10 +72,10 @@ public abstract class RoadBase {
    * y axis, in display coordinates) shows up in the right position.
    * 
    * @param g2 alters the transform on this object
-   * @param lane non-negative
-   * @param position of the rear end of the car
-   * @return TODO
+   * @param centerPosition position of the center of the car along the road
+   * @param lane which lane the car is in
+   * @return true iff the car is on this road
    */
-  public abstract boolean transformForCarAt(
-      Graphics2D g2, int lane, double position);
+  public abstract boolean transformForCar(Graphics2D g2,
+      double centerPosition, int lane);
 }

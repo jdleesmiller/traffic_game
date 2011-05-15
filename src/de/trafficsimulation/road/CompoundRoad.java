@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * A road built up from several other connected roads. The order of the roads
  * is important.
@@ -68,12 +69,13 @@ public class CompoundRoad extends RoadBase {
   }
 
   @Override
-  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
+  public boolean transformForCar(Graphics2D g2,
+      double centerPosition, int lane) {
     double length = 0;
     for (RoadBase road : this.roads) {
       double new_length = length + road.getRoadLengthMeters();
-      if (position <= new_length) {
-        road.transformForCarAt(g2, lane, position - length);
+      if (centerPosition <= new_length) {
+        road.transformForCar(g2, centerPosition - length, lane);
         return true;
       }
       length = new_length;

@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import static de.trafficsimulation.game.Utility.*;
 
 public class ArcRoad extends RoadBase {
@@ -109,9 +110,10 @@ public class ArcRoad extends RoadBase {
   }
 
   @Override
-  public boolean transformForCarAt(Graphics2D g2, int lane, double position) {
+  public boolean transformForCar(Graphics2D g2, double centerPosition, int lane) {
     double thetaStart = -innerArc.getAngleStart() / 180 * Math.PI;
-    double theta = -position / getRadiusMeters();
+    
+    double theta = -centerPosition / getRadiusMeters();
     if (isClockwise())
       theta *= -1;
     
