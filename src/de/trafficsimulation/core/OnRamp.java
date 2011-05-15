@@ -30,13 +30,13 @@ public class OnRamp extends MicroStreet {
     street.add(vehicleFactory.createCar(random, 5, getRoadLength(), 0));
   }
 
-  public void update(double dt, double qRamp, double perTr) {
+  public void update(double dt, double qRamp) {
     accelerate(dt);
     translate(dt);
     
     positions = setPos();
     
-    inFlow(dt, qRamp, perTr);
+    inFlow(dt, qRamp);
     mergeToMainRoad(mergingPos);
   }
 
@@ -220,7 +220,7 @@ public class OnRamp extends MicroStreet {
     //}
   } // end setNeighboursOnMainRoad
 
-  private void inFlow(double dt, double qIn, double perTr) {
+  private void inFlow(double dt, double qIn) {
 
     // System.out.println("in OnRamp.inflow: qIn="+qIn);
     final double spaceMin = 27; // minimum headway for new vehicle

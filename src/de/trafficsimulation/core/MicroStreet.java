@@ -122,7 +122,7 @@ public class MicroStreet implements Constants {
     return temp;
   }
 
-  public void update(double dt, double density, double qIn, double perTr) {
+  public void update(double dt, double density, double qIn) {
     
     // choice_BC=0: per. BC; otherwise open BC
     int choice_BC = ((choice_Szen == 1) || (choice_Szen == 6)) ? 0 : 1;
@@ -144,20 +144,20 @@ public class MicroStreet implements Constants {
     lanes = setLanes();
     distances = setDistances();
 
-    ioFlow(dt, qIn, perTr, choice_BC); // needs positions etc
+    ioFlow(dt, qIn, choice_BC); // needs positions etc
     if (choice_Szen == 1) {
-      adaptToNewDensity(density, perTr);
+      adaptToNewDensity(density);
     }
   }
 
   // HIER truck => car implementieren!!
 
-  protected void adaptToNewDensity(double density, double perTr) {
+  protected void adaptToNewDensity(double density) {
     int nCars_wished = (int) (density * getRoadLength() * 2.0);
     int nCars = positions.size();
     if (nCars_wished > nCars) {
       //System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
-      insertOneVehicle(perTr);
+      insertOneVehicle();
     }
     if (nCars_wished < nCars) {
       //System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
@@ -172,7 +172,7 @@ public class MicroStreet implements Constants {
    * new Fz can be introduced (ring road)
    */
 
-  private void insertOneVehicle(double perTr) {
+  private void insertOneVehicle() {
 
     // determine position and index of front veh
 
@@ -227,7 +227,6 @@ public class MicroStreet implements Constants {
       double posNew = pos_maxgap + 0.5 * maxgap;
       street.add(i_maxgap, vehicleFactory.createVehicle(random,
           posNew, 0.5*maxgap, lane_maxgap));
-      //LaneChange changemodelNew = (rand < perTr) ? polite : inconsiderate;
     }
 
   }
@@ -346,7 +345,7 @@ public class MicroStreet implements Constants {
     return street.size();
   }
 
-  protected void ioFlow(double dt, double qIn, double perTr, int choice_BC) {
+  protected void ioFlow(double dt, double qIn, int choice_BC) {
 
     // periodic BC
 

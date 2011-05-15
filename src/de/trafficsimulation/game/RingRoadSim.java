@@ -10,7 +10,7 @@ import de.trafficsimulation.core.MicroStreet;
  * The ring road simulation.
  * 
  * This is a wrapper around MicroStreet that allows it to more easily interface
- * with the GUI; it also handles the setting of sim parameters.
+ * with the GUI; it also handles the setting of relevant sim parameters.
  */
 public class RingRoadSim extends SimBase {
   
@@ -20,11 +20,7 @@ public class RingRoadSim extends SimBase {
   
   protected final double p_factor = 0.; // lanechanging: politeness factor
   protected final double deltaB = 0.2; // lanechanging: changing threshold
-  protected final int floatcar_nr = 0;
-  protected final double p_factorRamp = 0.; // ramp Lanechange factor
-  protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
   protected final double perTr = FRAC_TRUCK_INIT;
-  protected final double qRamp = QRMP_INIT2 / 3600.;
   protected final double qIn = Q_INIT2;
 
   public RingRoadSim(Random random, double roadLengthMeters) {
@@ -32,6 +28,7 @@ public class RingRoadSim extends SimBase {
     
     // bias toward the left lane if flow is clockwise
     CarTruckFactory vehicleFactory = new CarTruckFactory();
+    vehicleFactory.setTruckProbability(perTr);
     LaneChange lcPolite = vehicleFactory.getPoliteLaneChange();
     LaneChange lcIncons = vehicleFactory.getInconsiderateLaneChange();
     if (CLOCKWISE) {
@@ -48,21 +45,31 @@ public class RingRoadSim extends SimBase {
   
   @Override
   public void tick() {
-    getStreet().update(TIMESTEP_S, density, qIn, perTr);
+    getStreet().update(TIMESTEP_S, density, qIn);
     super.tick();
   }
 
   /**
-   * @return the street
+   * Underlying simulation.
+   * 
+   * @return not null 
    */
   public MicroStreet getStreet() {
     return street;
   }
   
+  /**
+   * Desired car density, in cars per meter.
+   * 
+   * @return non-negative
+   */
   public double getDensity() {
     return density;
   }
 
+  /**
+   * See getDensity.
+   */
   public void setDensity(double density) {
     this.density = density;
   }

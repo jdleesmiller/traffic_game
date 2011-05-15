@@ -52,9 +52,14 @@ public abstract class SimCanvas extends JPanel implements Constants {
   protected static final Color LANE_MARKER_COLOR = Color.WHITE;
   
   /**
-   * Target frame rate, in frames per (real) second.
+   * Target display frame rate, in frames per (real) second.
    */
   private static final double TARGET_FPS = 20;
+  
+  /**
+   * See getTimeStepsPerFrame.
+   */
+  private int timeStepsPerFrame = 1;
 
   private Timer timer;
   
@@ -87,7 +92,8 @@ public abstract class SimCanvas extends JPanel implements Constants {
     // set up timer for animation
     timer = new Timer((int) (1000 / TARGET_FPS), new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        tick();
+        for (int i = 0; i < getTimeStepsPerFrame(); ++i)
+          tick();
         repaint();
       }
     });
@@ -254,5 +260,25 @@ public abstract class SimCanvas extends JPanel implements Constants {
       g2.setColor(Color.RED);
       g2.fill(carBumperTemplate);
     }
+  }
+  
+  /**
+   * Number of simulation time steps to simulate before drawing one frame to
+   * the screen. This gives a simple way of making the sims appear to run
+   * faster.
+   * 
+   * @return positive
+   */
+  public int getTimeStepsPerFrame() {
+    return timeStepsPerFrame;
+  }
+
+  /**
+   * See getTimeStepsPerFrame.
+   * 
+   * @param timeStepsPerFrame positive
+   */
+  public void setTimeStepsPerFrame(int timeStepsPerFrame) {
+    this.timeStepsPerFrame = timeStepsPerFrame;
   }
 }

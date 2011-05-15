@@ -38,7 +38,7 @@ public class RingRoadGamePanel extends JPanel implements Constants {
     densitySlider.addChangeListener(new ChangeListener() {
       @Override
       public void stateChanged(ChangeEvent e) {
-        ringRoadCanvas.getSim().setDensity(densitySlider.getValue() * 1e-3);
+        updateSimParameters();
       }
     });
     ringRoadCanvas.add(densitySlider);
@@ -46,6 +46,10 @@ public class RingRoadGamePanel extends JPanel implements Constants {
 
   public void start() {
     ringRoadCanvas.start();
+    updateSimParameters();
+  }
+
+  private void updateSimParameters() {
     ringRoadCanvas.getSim().setDensity(densitySlider.getValue() * 1e-3);
   }
   

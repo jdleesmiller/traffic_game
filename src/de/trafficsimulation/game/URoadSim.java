@@ -59,8 +59,8 @@ public class URoadSim extends SimBase
   
   @Override
   public void tick() {
-    getStreet().update(TIMESTEP_S, density, qIn, perTr);
-    getOnRamp().update(TIMESTEP_S, qRamp, perTr);
+    getStreet().update(TIMESTEP_S, density, qIn);
+    getOnRamp().update(TIMESTEP_S, qRamp);
     super.tick();
   }
 
