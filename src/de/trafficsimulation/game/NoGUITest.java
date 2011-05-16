@@ -30,7 +30,7 @@ public class NoGUITest implements Constants {
     double uRoadLengthMeters = 1176.9911184307753;
     double rampLengthMeters = 270.0;
     
-    System.out.println("qIn\tnumCarsOut");
+    System.out.println("statsDuration\tqIn\tnumCarsOut\trunMillis");
     
     Random random = new Random();
     for (int trial = 0; trial < numTrials; ++trial) {
@@ -38,8 +38,13 @@ public class NoGUITest implements Constants {
         URoadSim sim = new URoadSim(random,
             uRoadLengthMeters, rampLengthMeters);
         sim.qIn = ((double)point) * Q_MAX / 3600.0 / numPoints;
+        long startTime = System.currentTimeMillis();
         int numCarsOut = runForNumCarsOut(sim, statsStartTime, statsDuration);
-        System.out.println((sim.qIn * 3600.0) + "\t" + numCarsOut);
+        long endTime = System.currentTimeMillis();
+        System.out.println(statsDuration +
+        		"\t" + (sim.qIn * 3600.0) +
+        		"\t" + numCarsOut + 
+        		"\t" + (endTime - startTime));
       }
     }
   }
