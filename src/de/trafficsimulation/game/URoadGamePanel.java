@@ -31,6 +31,7 @@ import de.trafficsimulation.core.Constants;
 - ramp metering game
 + vsl game
 - moving average + popup
+- change to run background sims for a fixed time
  */
 
 public abstract class URoadGamePanel extends JPanel implements Constants {
@@ -98,12 +99,6 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * we can tell the user how much longer they have to wait.
    */
   private static final int BACKGROUND_SIM_UPDATE_TICKS = 500;
-
-  /**
-   * Maximum number of sims to run concurrently in the background; keep in mind
-   * that the GUI also uses (effectively) one thread.
-   */
-  private static final int NUM_BACKGROUND_SIM_THREADS = 2;
 
   /**
    * Update the sim progress meter this often.
@@ -218,7 +213,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     //
     // set up background threads and results collection for sims
     //
-    pool = Executors.newFixedThreadPool(NUM_BACKGROUND_SIM_THREADS);
+    int numThreads = Runtime.getRuntime().availableProcessors() - 1;
+    pool = Executors.newFixedThreadPool(numThreads);
     simResults = new ArrayList<SimResult>();
     gameProgressTimer = new Timer(GAME_PROGRESS_DELAY_MS, new ActionListener() {
       @Override
@@ -266,6 +262,10 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     final double qIn = flowInSlider.getValue() / 3600.;
     
     // spin up background simulation threads
+    // note that the default behavior is for the background threads run at
+    // priority 5, and for the event dispatch thread to run at priority 6,
+    // which is fine for us (don't want to hang the GUI if we spin up lots of
+    // background threads)
     startBackgroundSims(qIn);
     
     // start the timer that polls the background sim results until all sims
