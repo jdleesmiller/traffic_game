@@ -25,7 +25,7 @@ import javax.swing.Timer;
 import de.trafficsimulation.core.Constants;
 
 /* TODO 20110519
-- return to main menu after long pause
+- return to main menu after long pause DONE
 - flow OK / broken on each flow game sim GUI?
 - logos + colors
 - ramp metering game

@@ -1,10 +1,15 @@
 package de.trafficsimulation.game;
 
+import java.awt.AWTEvent;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
@@ -18,10 +23,18 @@ public class MainFrame extends JFrame implements Constants {
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
   private static final String FLOW_GAME_GAME_CARD = "flow_game";
 
+  /**
+   * Reload the intro panel if there has not been any activity after this
+   * interval, in milliseconds.
+   */
+  private static final int INACTIVITY_TIMEOUT_MS = 5*60*1000;
+
   private final CardLayout cardLayout;
   private final IntroPanel introPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
+  
+  private final Timer inactivityTimer;
 
   public MainFrame() {
     super("Traffic Flow Game");
@@ -73,6 +86,22 @@ public class MainFrame extends JFrame implements Constants {
     };
     add(flowGamePanel, FLOW_GAME_GAME_CARD);
     
+    //
+    // inactivity sensing (return to intro panel if no mouse activity)
+    //
+    inactivityTimer = new Timer(INACTIVITY_TIMEOUT_MS, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        showIntro();
+      }
+    });
+    Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
+      @Override
+      public void eventDispatched(AWTEvent event) {
+        inactivityTimer.restart();
+      }
+    }, AWTEvent.MOUSE_MOTION_EVENT_MASK + AWTEvent.MOUSE_EVENT_MASK);
+    inactivityTimer.start();
   }
   
   private void stopAll() {
