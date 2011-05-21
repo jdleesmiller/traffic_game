@@ -1,9 +1,12 @@
 package de.trafficsimulation.game;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 import de.trafficsimulation.core.Constants;
 
@@ -105,6 +108,8 @@ public class MainFrame extends JFrame implements Constants {
     EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
+        setLookAndFeel();
+        
         MainFrame f = new MainFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(640, 480);
@@ -113,5 +118,42 @@ public class MainFrame extends JFrame implements Constants {
         f.showIntro();
       }
     });
+  }
+    
+    // TODO see 
+    // http://www.jasperpotts.com/blog/2008/08/skinning-a-slider-with-nimbus/
+    // http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/color.html
+
+  private static void setLookAndFeel() {
+    // try to find the fancy Nimbus look and feel
+    String nimbusClassName = null;
+    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+      if ("Nimbus".equals(info.getName())) {
+        nimbusClassName = info.getClassName();
+        break;
+      }
+    }
+    
+    if (nimbusClassName != null) {
+      // set up nice colors
+      // red:    #cc3333
+      // yellow: #ffcc33
+      // green:  #99cc00
+      //   light: #c7e667
+      //   dark:  #648500
+      //   triad red:    #c90024
+      //   triad purple: #500a91
+      //UIManager.put("nimbusBase", new Color(0xc7e667));
+      //UIManager.put("nimbusBlueGrey", new Color(0x648500));
+      //UIManager.put("control", new Color(0x99cc00));
+      // nimbusFocus also important
+      
+      // try to load it up
+      try {
+        UIManager.setLookAndFeel(nimbusClassName);
+      } catch (Exception e) {
+        // just give up
+      }
+    }
   }
 }
