@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -172,30 +171,9 @@ public abstract class SimCanvas extends JPanel implements Constants {
   }
 
   protected void handleResize() {
-    int width = getWidth();
-    int height = getHeight();
-    
-    // subtract off border, if we have one
-    Insets insets = getInsets();
-    width -= insets.left + insets.right;
-    height -= insets.top + insets.bottom;
-    
     metersToPixels = new AffineTransform();
-    Rectangle2D bounds = this.getBoundsMeters();
-    
-    double scale = 1;
-    
-    // special case: may get zero or negative widths when component is hidden;
-    if (width > 0 && height > 0) {
-      double scaleX = width / bounds.getWidth();
-      double scaleY = height / bounds.getHeight();
-      scale = Math.min(scaleX, scaleY);
-    }
-    
-    // set the metersToPixel transform so the road fits into the window
-    metersToPixels.translate(insets.left + width / 2, insets.top + height / 2);
-    metersToPixels.scale(scale, scale);
-    metersToPixels.translate(-bounds.getCenterX(), -bounds.getCenterY());
+    double scale = Utility.transformToFit(this,
+        this.getBoundsMeters(), metersToPixels);
     
     // the lane marker widths are set in pixels, not meters
     laneMarkerStroke = new BasicStroke((float)(LANE_MARKER_WIDTH_PX/scale),

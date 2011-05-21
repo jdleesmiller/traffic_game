@@ -1,7 +1,13 @@
 package de.trafficsimulation.game;
 
+import java.awt.Insets;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
+
 import static java.lang.Math.*;
 
 public class Utility {
@@ -96,5 +102,42 @@ public class Utility {
    */
   public static Arc2D reverseArc(Arc2D arc) {
     return reverseArcInPlace((Arc2D)arc.clone());
+  }
+  
+  /**
+   * Modify the given transform so that the given bounds fit inside the given
+   * component. If one direction is not tight, the bounds are centered in that
+   * direction.
+   * 
+   * @param c not null
+   * @param bounds not null
+   * @param transform not null
+   * @return positive
+   */
+  public static double transformToFit(JComponent c,
+      Rectangle2D bounds, AffineTransform transform)
+  {
+    int width = c.getWidth();
+    int height = c.getHeight();
+    
+    // subtract off border, if we have one
+    Insets insets = c.getInsets();
+    width -= insets.left + insets.right;
+    height -= insets.top + insets.bottom;
+    
+    // special case: may get zero or negative widths when component is hidden;
+    double scale = 1;
+    if (width > 0 && height > 0) {
+      double scaleX = width / bounds.getWidth();
+      double scaleY = height / bounds.getHeight();
+      scale = Math.min(scaleX, scaleY);
+    }
+    
+    // set the metersToPixel transform so the road fits into the window
+    transform.translate(insets.left + width / 2, insets.top + height / 2);
+    transform.scale(scale, scale);
+    transform.translate(-bounds.getCenterX(), -bounds.getCenterY());
+    
+    return scale;
   }
 }

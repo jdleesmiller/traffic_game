@@ -24,6 +24,15 @@ import javax.swing.Timer;
 
 import de.trafficsimulation.core.Constants;
 
+/* TODO 20110519
+- return to main menu after long pause
+- flow OK / broken on each flow game sim GUI?
+- logos + colors
+- ramp metering game
++ vsl game
+- moving average + popup
+ */
+
 public abstract class URoadGamePanel extends JPanel implements Constants {
   private static final long serialVersionUID = 1L;
   
