@@ -71,15 +71,15 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   private final static int SIM_COLS = 2;
   
   /**
-   * Time steps per frame drawn for the visible sims. This makes them look like
-   * they're going very fast.
+   * Time steps per frame drawn for the visible sims. A large number here makes
+   * them run very fast.
    */
-  private final static int TIME_STEPS_PER_FRAME = 8;
+  private final static int TIME_STEPS_PER_FRAME = 20;
   
   /**
    * Number of independent sim runs to do in the background.
    */
-  private static final int NUM_BACKGROUND_SIMS = 10;
+  private static final int NUM_BACKGROUND_SIMS = 60;
   
   /**
    * Warmup period for each sim, in seconds. Stats are not collected during the
@@ -91,7 +91,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * Total run time for each sim, in seconds. This should be larger than
    * BACKGROUND_SIM_WARMUP_SECONDS, or no results will be collected.
    */
-  private static final double BACKGROUND_SIM_TOTAL_SECONDS = 30*60;
+  private static final double BACKGROUND_SIM_TOTAL_SECONDS = 75*60;
   
   /**
    * Each background sim publishes its progress after this many seconds, so
@@ -114,7 +114,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * Don't update the score estimate until we have at least this much total
    * time; this doesn't include warm up time. 
    */
-  protected static final double MIN_SECONDS_FOR_ESTIMATE = 10*60;
+  protected static final double MIN_SECONDS_FOR_ESTIMATE =
+	  5*BACKGROUND_SIM_TOTAL_SECONDS;
   
   private static class SimResult {
     public int carsOut;
@@ -190,6 +191,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     scorePanel = new JPanel();
     controlPanel.add(Box.createVerticalStrut(PAD));
     controlPanel.add(scorePanel);
+    controlPanel.add(Box.createVerticalGlue()); // fill up rest of space
     
     scorePanel.add(new JLabel("score: "));
     
@@ -250,7 +252,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
           scoreLabel.setText(String.format("%.0f cars per hour",
               3600.0 * totalCarsOut / totalCarsOutTime));
         } else {
-          scoreLabel.setText("calculating...");
+          scoreLabel.setText("warming up...");
         }
         
         if (allFinished)
@@ -367,13 +369,11 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     flowInSlider.setEnabled(true);
     playButton.setEnabled(true);
     backButton.setEnabled(true);
-    scorePanel.setVisible(true);
   }
   
   public void start() {
     // set default
     flowInSlider.setValue(Q_INIT2);
-    scorePanel.setVisible(false);
   }
 
   public void stop() {
