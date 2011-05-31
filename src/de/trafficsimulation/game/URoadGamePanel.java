@@ -214,6 +214,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     // set up background threads and results collection for sims
     //
     int numThreads = Runtime.getRuntime().availableProcessors() - 1;
+    if (numThreads < 1)
+      numThreads = 1;
     pool = Executors.newFixedThreadPool(numThreads);
     simResults = new ArrayList<SimResult>();
     gameProgressTimer = new Timer(GAME_PROGRESS_DELAY_MS, new ActionListener() {
