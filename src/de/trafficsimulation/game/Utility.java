@@ -5,12 +5,17 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 
 import static java.lang.Math.*;
 
 public class Utility {
+  /**
+   * Support for debug and info logging. By default, this logs to stderr.
+   */
+  public final static Logger log = Logger.getAnonymousLogger();
   
   /**
    * Translate line perpendicularly by given distance. 
