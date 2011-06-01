@@ -1,6 +1,7 @@
 package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -8,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,18 +20,23 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import de.trafficsimulation.core.Constants;
-import de.trafficsimulation.game.BackgroundRunner.AggregateResults;
 
 /* TODO 20110519
 - return to main menu after long pause DONE
-- flow OK / broken on each flow game sim GUI?
+- moving average + popup: flow OK / broken on each flow game sim GUI?
 - logos + colors
 - ramp metering game
 + vsl game
-- moving average + popup
 - change to run background sims for a fixed time DONE
+
+- spin up n bg threads
+- run sims in series
+- still need a warmup
+- just propagate flow updates to the main thread
  */
 
 public abstract class URoadGamePanel extends JPanel implements Constants {
@@ -41,13 +46,19 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   
   private final JSlider flowInSlider;
   
-  private final JButton playButton;
+  private final JSlider rampFlowSlider;
   
-  private final JPanel roundProgressPanel;
-  
-  private final JProgressBar roundProgressBar;
+  private final JSlider speedSlider;
   
   private final JPanel scorePanel;
+  
+  private final CardLayout scoreCardLayout;
+  
+  private final String SCORE_CARD_SCORE = "score";
+  
+  private final String SCORE_CARD_CALCULATING = "calc";
+  
+  private final JProgressBar roundProgressBar;
   
   private final JLabel scoreLabel;
   
@@ -63,14 +74,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * Handles running the simulations in the background; null iff not running
    * (i.e. between rounds).
    */
-  private BackgroundRunner simRunner;
-  
-  /**
-   * Records when the current round began; valid only between calls to
-   * beginRound and endRound.
-   */
-  private long roundStartMillis;
-    
+  private BackgroundAverageRunner simRunner;
+ 
   private final static int PAD = 10; // px
   
   private final static int SIM_PAD = 5; // px
@@ -88,25 +93,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * Number of seconds per round. This should be set long enough to collect
    * enough stats for all in flows, on the machine on which the sim is running.
    */
-  private static final int ROUND_TIME_SECONDS = 5;
-  
-  /**
-   * Maximum number of independent simulations to run in the background. Only
-   * those that finish before ROUND_TIME_SECONDS elapse will actually run.
-   */
-  private static final int NUM_BACKGROUND_SIMS = 10;
-  
-  /**
-   * Warmup period for each sim, in seconds. Stats are not collected during the
-   * warmup period.
-   */
-  private static final double BACKGROUND_SIM_WARMUP_SECONDS = 15*60;
-  
-  /**
-   * Total run time for each sim, in seconds. This should be larger than
-   * BACKGROUND_SIM_WARMUP_SECONDS, or no results will be collected.
-   */
-  private static final double BACKGROUND_SIM_TOTAL_SECONDS = 30*60;
+  private static final int ROUND_TIME_SECONDS = 10;
   
   /**
    * Update the sim progress meter this often.
@@ -114,15 +101,10 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   private static final int GAME_PROGRESS_DELAY_MS = 100;
 
   /**
-   * Don't update the score estimate until we have at least this much total
-   * time; this doesn't include warm up time. 
-   * 
-   * This must exceed (BACKGROUND_SIM_TOTAL_SECONDS -
-   * BACKGROUND_SIM_WARMUP_SECONDS) * NUM_BACKGROUND_SIMS, or the GUI will just
-   * hang forever.
+   * Don't update the score estimate until we have at least this many runs
+   * finished.
    */
-  private static final double MIN_SECONDS_FOR_ESTIMATE =
-	  2*BACKGROUND_SIM_TOTAL_SECONDS;
+  private static final int MIN_RUNS_FOR_ESTIMATE = 5;
   
   public URoadGamePanel() {
     setLayout(new BorderLayout());
@@ -157,41 +139,76 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     
     controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
     controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(new JLabel("set flow in on main road:"));
+    controlPanel.add(new JLabel("set flow in on main road (veh/hr):"));
     
     flowInSlider = new JSlider(0, Q_MAX, Q_INIT2);
     flowInSlider.setMajorTickSpacing(Q_MAX/4);
     flowInSlider.setPaintLabels(true);
     flowInSlider.setPaintTicks(true);
-    controlPanel.add(flowInSlider);
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    
-    playButton = new JButton("Play");
-    playButton.addActionListener(new ActionListener() {
+    flowInSlider.addChangeListener(new ChangeListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void stateChanged(ChangeEvent e) {
+        endRound();
         beginRound();
       }
     });
-    controlPanel.add(playButton);
+    controlPanel.add(flowInSlider);
     
-    roundProgressPanel = new JPanel();
-    roundProgressPanel.setVisible(false);
     controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(roundProgressPanel);
+    controlPanel.add(new JLabel("set flow in on ramp (veh/hr):"));
+    rampFlowSlider = new JSlider(0, QRMP_MAX, QRMP_INIT2);
+    rampFlowSlider.setMajorTickSpacing(QRMP_MAX/4);
+    rampFlowSlider.setPaintLabels(true);
+    rampFlowSlider.setPaintTicks(true);
+    rampFlowSlider.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        endRound();
+        beginRound();
+      }
+    });
+    controlPanel.add(Box.createVerticalStrut(PAD));
+    controlPanel.add(rampFlowSlider);
     
-    roundProgressBar = new JProgressBar(0, (int)ROUND_TIME_SECONDS*1000);
-    roundProgressPanel.add(roundProgressBar);
+    controlPanel.add(Box.createVerticalStrut(PAD));
+    controlPanel.add(new JLabel("set speed limit (km/h):"));
+    speedSlider = new JSlider((int)V0_MIN_KMH, (int)V0_MAX_KMH,
+        (int)V0_INIT_KMH);
+    speedSlider.setMajorTickSpacing((int)(V0_MAX_KMH/4.0));
+    speedSlider.setPaintLabels(true);
+    speedSlider.setPaintTicks(true);
+    speedSlider.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        endRound();
+        beginRound();
+      }
+    });
+    controlPanel.add(Box.createVerticalStrut(PAD));
+    controlPanel.add(speedSlider);
+    
+    controlPanel.add(Box.createVerticalStrut(PAD));
+    controlPanel.add(new JLabel("flow out: "));
+    controlPanel.add(Box.createVerticalStrut(PAD));
     
     scorePanel = new JPanel();
-    controlPanel.add(Box.createVerticalStrut(PAD));
     controlPanel.add(scorePanel);
     controlPanel.add(Box.createVerticalGlue()); // fill up rest of space
     
-    scorePanel.add(new JLabel("score: "));
+    scoreCardLayout = new CardLayout();
+    scorePanel.setLayout(scoreCardLayout);
+    
+    JPanel progressPanel = new JPanel();
+    scorePanel.add(progressPanel, SCORE_CARD_CALCULATING);
+    
+    roundProgressBar = new JProgressBar(0, (int)ROUND_TIME_SECONDS*1000);
+    progressPanel.add(roundProgressBar);
+    
+    JPanel scoreLabelPanel = new JPanel();
+    scorePanel.add(scoreLabelPanel, SCORE_CARD_SCORE);
     
     scoreLabel = new JLabel();
-    scorePanel.add(scoreLabel);
+    scoreLabelPanel.add(scoreLabel);
    
     //
     // right panel (simulation grid)
@@ -205,6 +222,9 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
         canvas.setBorder(BorderFactory.createMatteBorder(
             SIM_PAD, SIM_PAD, SIM_PAD, SIM_PAD, Color.BLACK));
         simPanel.add(canvas);
+        
+        canvas.getFloatPanel().add(new JLabel(""));
+        
         simCanvases.add(canvas);
       }
     }
@@ -219,33 +239,20 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
         if (simRunner == null)
           return;
         
-        AggregateResults results = simRunner.getAggregateResults();
-        
-        // update score, if we have enough data
-        if (results.totalStatsTime > MIN_SECONDS_FOR_ESTIMATE) {
-          scoreLabel.setText(String.format("%.0f cars per hour",
-              3600.0 * results.carsOut / results.totalStatsTime));
-        } else {
-          scoreLabel.setText("warming up...");
+        // update per-sim flow meter
+        for (URoadCanvas simCanvas : simCanvases) {
+          JLabel label = (JLabel) simCanvas.getFloatPanel().getComponent(0);
+          label.setText(String.format("%.0f cars / hour",
+              simCanvas.getFlowMonitor().getMeanFlowOut() * 3600));
         }
         
-        // update progress bar based on time run so far, and check for timeout
-        int roundMillis = (int)(System.currentTimeMillis() - roundStartMillis);
-        if (roundMillis <= ROUND_TIME_SECONDS * 1000) {
-          roundProgressBar.setValue(roundMillis);
+        // update score, if we have enough data
+        if (simRunner.getFlowCount() > MIN_RUNS_FOR_ESTIMATE) {
+          scoreCardLayout.show(scorePanel, SCORE_CARD_SCORE);
+          scoreLabel.setText(String.format("%.0f cars per hour",
+              3600.0 * simRunner.getFlowMean()));
         } else {
-          if (results.totalStatsTime > MIN_SECONDS_FOR_ESTIMATE) {
-            // we have enough real time and enough sim time; stop now
-            endRound();
-          } else if (!roundProgressBar.isIndeterminate()){
-            // we don't yet have enough for a score; set the progress bar to
-            // indeterminate and wait; this shouldn't happen unless we're on
-            // a very slow machine
-            roundProgressBar.setIndeterminate(true);
-            Utility.log.log(Level.WARNING,
-                "round timed out after {0}ms with only {1}s stats time",
-                new Object[] {roundMillis, results.totalStatsTime} );
-          }
+          roundProgressBar.setValue(simRunner.getFlowCount());
         }
       }
     });
@@ -254,79 +261,75 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   protected void beginRound() {
     // each sim uses the same value for qIn (in flow on main road)
     final double qIn = flowInSlider.getValue() / 3600.;
+    final double qRamp = rampFlowSlider.getValue() / 3600.;
+    final double v0 = speedSlider.getValue();
     
     // spin up background simulation threads
-    // note that the default behavior is for the background threads run at
-    // priority 5, and for the event dispatch thread to run at priority 6,
-    // which is fine for us (don't want to hang the GUI if we spin up lots of
-    // background threads)
-    startBackgroundSims(qIn);
-    
-    // start the timer that polls the background sim results until all sims
-    // are finished
-    gameProgressTimer.start();
-    roundProgressBar.setValue(0);
-    roundProgressBar.setIndeterminate(false);
-    roundProgressPanel.setVisible(true);
-    flowInSlider.setEnabled(false);
-    playButton.setEnabled(false);
-    backButton.setEnabled(false);
+    startBackgroundSims(qIn, qRamp, v0);
     
     // start sim visualisation
     for (URoadCanvas canvas : simCanvases) {
       canvas.start();
       canvas.getSim().qIn = qIn;
+      canvas.getSim().qRamp = qRamp;
+      canvas.getSim().getStreet().getVehicleFactory().getCarIDM().v0 = v0;
+      canvas.getSim().getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
+      canvas.getSim().getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
+      canvas.getSim().getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
     }
     
-    roundStartMillis = System.currentTimeMillis();
+    // start the timer that polls the background sim results until all sims
+    // are finished
+    scoreCardLayout.show(scorePanel, SCORE_CARD_CALCULATING);
+    gameProgressTimer.start();
+    roundProgressBar.setValue(0);
+    roundProgressBar.setIndeterminate(true); // TODO HACK
   }
   
-  private void startBackgroundSims(final double qIn) {
+  private void startBackgroundSims(final double qIn, final double qRamp,
+      final double v0) {
     // each sim needs to know how long the roads are; use the first sim canvas
     // to compute this (but note that they're all identical)
-    double uRoadLengthMeters =
+    final double uRoadLengthMeters =
       simCanvases.get(0).getURoad().getRoadLengthMeters();
-    double rampLengthMeters = 
+    final double rampLengthMeters = 
       simCanvases.get(0).getOnRampRoad().getRoadLengthMeters();
     
-    // create sims; we create all sims in advance, but we won't necessarily
-    // run them all
-    List<URoadSim> sims = new ArrayList<URoadSim>();
-    for (int i = 0; i < NUM_BACKGROUND_SIMS; ++i) {
-      // each sim gets its own random number sequence; note that Java's
-      // Random() uses more than just the current time to seed the generator
-      // (there is a counter, too); if it didn't, this would be wrong
-      URoadSim sim = new URoadSim(new Random(),
-          uRoadLengthMeters, rampLengthMeters);
-      
-      // set our one non-default parameter
-      sim.qIn = qIn;
-      
-      sims.add(sim);
-    }
-    
     // create the runner; this starts the sims running on background threads
-    simRunner = new BackgroundRunner(BACKGROUND_SIM_WARMUP_SECONDS,
-        BACKGROUND_SIM_TOTAL_SECONDS, sims);
+    simRunner = new BackgroundAverageRunner() {
+      @Override
+      protected URoadSim getNewSim() {
+        // each sim gets its own random number sequence; note that Java's
+        // Random() uses more than just the current time to seed the generator
+        // (there is a counter, too), and it handles concurrent access (the
+        // counter is marked volatile)
+        URoadSim sim = new URoadSim(new Random(), uRoadLengthMeters,
+            rampLengthMeters);
+
+        sim.qIn = qIn;
+        sim.qRamp = qRamp;
+        sim.getStreet().getVehicleFactory().getCarIDM().v0 = v0;
+        sim.getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
+        sim.getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
+        sim.getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
+        
+        return sim;
+      }
+    };
   }
   
   protected void endRound() {
     gameProgressTimer.stop();
-    roundProgressPanel.setVisible(false);
     for (URoadCanvas canvas : simCanvases) {
       canvas.stop();
     }
-    simRunner.shutdown();
-    roundStartMillis = -1;
-    
-    flowInSlider.setEnabled(true);
-    playButton.setEnabled(true);
-    backButton.setEnabled(true);
+    simRunner.stop();
   }
   
   public void start() {
     // set default
     flowInSlider.setValue(Q_INIT2);
+    beginRound();
   }
 
   public void stop() {

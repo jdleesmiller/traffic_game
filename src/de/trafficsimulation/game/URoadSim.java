@@ -17,9 +17,10 @@ public class URoadSim extends SimBase
   private final MicroStreet street;
   private final OnRamp onRamp;
   
-  // single mutable parameter at present
+  // mutable parameters
   protected double qIn = Q_INIT2 / 3600.;
-  
+  protected double qRamp = QRMP_INIT2 / 3600.;
+    
   protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
   protected final double p_factor = 0.; // lanechanging: politeness factor
   protected final double deltaB = 0.2; // lanechanging: changing threshold
@@ -27,7 +28,6 @@ public class URoadSim extends SimBase
   protected final double p_factorRamp = 0.; // ramp Lanechange factor
   protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
   protected final double perTr = FRAC_TRUCK_INIT;
-  protected final double qRamp = QRMP_INIT2 / 3600.;
     
   /**
    * 

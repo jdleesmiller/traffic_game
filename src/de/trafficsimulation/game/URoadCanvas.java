@@ -1,6 +1,7 @@
 package de.trafficsimulation.game;
 
 import java.awt.Graphics2D;
+import java.awt.GridBagLayout;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import de.trafficsimulation.road.RoadBase;
 import de.trafficsimulation.road.StraightRoad;
@@ -17,6 +19,16 @@ import de.trafficsimulation.road.URoad;
  * Animation for the 'on ramp' simulation.
  */
 public class URoadCanvas extends SimCanvas {
+
+  /**
+   * Measure flow for meanFlowOut at this interval, in seconds.
+   */
+  public static final double MEAN_FLOW_OUT_INTERVAL = 30;
+
+  /**
+   * Smoothing factor for meanFlowOut.
+   */
+  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.15;
   
   private URoadSim sim;
   
@@ -26,6 +38,10 @@ public class URoadCanvas extends SimCanvas {
   private final Rectangle2D.Double onRampBarrier;
   private final Line2D.Double onRampEndLine;
   private final Line2D.Double onRampLine;
+  
+  private final JPanel floatPanel;
+  
+  private URoadFlowMonitor flowMonitor;
   
   public URoadCanvas() {
     super(makeRoads());
@@ -61,6 +77,11 @@ public class URoadCanvas extends SimCanvas {
         rampBounds.getMinY(),
         rampBounds.getMaxX() + rampEndLength - 4,
         rampBounds.getMinY());
+    
+    // float a panel in the center for display purposes
+    setLayout(new GridBagLayout());
+    floatPanel = new JPanel();
+    add(floatPanel);
   }
   
   /** For testing */
@@ -84,6 +105,8 @@ public class URoadCanvas extends SimCanvas {
     sim = new URoadSim(random,
         getURoad().getRoadLengthMeters(),
         getOnRampRoad().getRoadLengthMeters());
+    flowMonitor = new URoadFlowMonitor(sim,
+        MEAN_FLOW_OUT_SMOOTHING_FACTOR, MEAN_FLOW_OUT_INTERVAL);
     super.start(seed);
   }
   
@@ -91,6 +114,7 @@ public class URoadCanvas extends SimCanvas {
   public void stop() {
     super.stop();
     sim = null;
+    flowMonitor = null;
   }
 
   @Override
@@ -98,6 +122,7 @@ public class URoadCanvas extends SimCanvas {
     if (sim == null)
       return;
     sim.tick();
+    flowMonitor.sample();
   }
   
   @Override
@@ -157,11 +182,30 @@ public class URoadCanvas extends SimCanvas {
     return sim;
   }
   
+  /**
+   * Flow of cars out of the simulation.
+   * 
+   * @return null unless running (i.e. unless start has been called and end
+   * has not)
+   */
+  public URoadFlowMonitor getFlowMonitor() {
+    return flowMonitor;
+  }
+  
   public RoadBase getURoad() {
     return getRoads().get(0);
   }
   
   public RoadBase getOnRampRoad() {
     return getRoads().get(1);
+  }
+
+  /**
+   * Panel floating in the middle of the canvas.
+   * 
+   * @return not null
+   */
+  public JPanel getFloatPanel() {
+    return floatPanel;
   }
 }
