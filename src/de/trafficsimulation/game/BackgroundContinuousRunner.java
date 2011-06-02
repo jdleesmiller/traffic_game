@@ -4,23 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * - the idea of the warmup is to give jams a chance to form
- * - but really we don't need long to measure the rate; it's pretty steady
- * - could instead do a moving average for each sim
- * - then average the moving averages?
- * - if each sim only runs for an hour or so, we could just wait until the end
- *   of the sim to report the moving average - easy
- * 
- * GUI experience:
- * - do something immediately: start running sims; say "calculating" initially
- * - user can change qIn at any time, and it just says "calculating..." again.
- * - when to stop saying calculating? could just do a time window?
- *   or could try to look at the stability of the estimate -- e.g. 5 estimates
- *   less than 10 vehicles / hour different mean we display the result
- * - just keep running the sims forever; change the messages
- * 
- * The background threads run with priority set to one less than the thread
- * used to construct the object.
+ * Run simulations in the background forever. This is a fixed number of threads
+ * that continuously creates new simulations (by calling the abstract getNewSim
+ * method). Each run has an exponential moving average. The moving average at
+ * the end of each run is then averaged together to give one global average.
+ * You must call stop() when finished.
  */
 public abstract class BackgroundContinuousRunner {
   
@@ -130,7 +118,7 @@ public abstract class BackgroundContinuousRunner {
    * 
    * @return non-negative; initially zero
    */
-  public int getFlowCount() {
+  public synchronized int getFlowCount() {
     return flowCount;
   }
 
@@ -140,7 +128,7 @@ public abstract class BackgroundContinuousRunner {
    * 
    * @return non-negative; initially zero
    */
-  public double getFlowMean() {
+  public synchronized double getFlowMean() {
     return flowMean;
   }
 }
