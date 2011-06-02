@@ -33,6 +33,11 @@ public class Resource {
    */
   public static final Color BACKGROUND_HIGHLIGHT = BACKGROUND.brighter();
   
+  /**
+   * A lighter shade of the main background color.
+   */
+  //public static final Color FEATURE = new Color();
+  
   private static String getResourceName(String fileName) {
     return "/de/trafficsimulation/game/res/" + fileName;
   }
