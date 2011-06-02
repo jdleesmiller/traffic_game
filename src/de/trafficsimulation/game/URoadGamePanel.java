@@ -193,7 +193,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
         canvas.setBorder(BorderFactory.createMatteBorder(
             i == 0 ? 0 : SIM_PAD, SIM_PAD,
             i == SIM_ROWS - 1 ? 0 : SIM_PAD,
-            i == SIM_COLS - 1 ? 0 : SIM_PAD, Color.BLACK));
+            j == SIM_COLS - 1 ? 0 : SIM_PAD, Color.BLACK));
         simPanel.add(canvas);
         
         canvas.getFloatPanel().add(new JLabel(""));

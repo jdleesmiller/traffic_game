@@ -53,23 +53,16 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   private final static int MEDIUM_DENSITY_INVKM = 60;
   
   /**
-   * Location of the "high density" arrow, in vehicles/km.
-   */
-  private final static int HIGH_DENSITY_INVKM = DENS_MAX_INVKM;
-  
-  /**
    * Boundary between the low density and medium density messages, in
    * vehicles/km.
    */
-  private final static int LOW_MEDIUM_DENSITY_INVKM =
-    (LOW_DENSITY_INVKM + MEDIUM_DENSITY_INVKM) / 2;
+  private final static int LOW_MEDIUM_DENSITY_INVKM = 55;
   
   /**
    * Boundary between the medium density and high density messages, in
    * vehicles/km.
    */
-  private final static int MEDIUM_HIGH_DENSITY_INVKM =
-    (MEDIUM_DENSITY_INVKM + HIGH_DENSITY_INVKM) / 2;
+  private final static int MEDIUM_HIGH_DENSITY_INVKM = 70;
   
   public RingRoadGamePanel() {
     setLayout(new BorderLayout());
@@ -96,8 +89,8 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     //
     JPanel introMessage = new JPanel();
     introMessage.setLayout(new GridBagLayout()); // float center
-    JLabel playButton = new RoundedButton("play",
-        Resource.TITLE_FONT.deriveFont(72f), 40) {
+    JLabel playButton = new RoundedButton("touch to play",
+        Resource.TITLE_FONT.deriveFont(48f), 40) {
       private static final long serialVersionUID = 1L;
       @Override
       public void click() {
@@ -108,11 +101,20 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     uiContainer.add(introMessage, INTRO_CARD);
     
     //
-    // main game panel
+    // density game panel
     //
     JPanel controlPanel = new JPanel();
     controlPanel.setLayout(new BorderLayout());
     uiContainer.add(controlPanel, CONTROL_CARD);
+    
+    //
+    // title
+    //
+    JLabel titleLabel = new JLabel("ring road");
+    titleLabel.setHorizontalAlignment(JLabel.CENTER);
+    titleLabel.setFont(Resource.TITLE_FONT.deriveFont(48f));
+    titleLabel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
+    controlPanel.add(titleLabel, BorderLayout.NORTH);
     
     //
     // density slider control
@@ -144,7 +146,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     JPanel lowDensityMessage = new MessageBubble();
     lowDensityMessage.add(Resource.makeStyledTextPane(
         "When there are not many cars, traffic flows freely.\n" +
-        "Try increasing the flow..."), BorderLayout.CENTER);
+        "Try dragging the slider to add more cars..."), BorderLayout.CENTER);
     messageContainer.add(lowDensityMessage, LOW_DENSITY_CARD);
     
     JPanel mediumDensityMessage = new MessageBubble();
