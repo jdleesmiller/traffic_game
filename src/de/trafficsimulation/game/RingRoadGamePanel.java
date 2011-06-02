@@ -2,16 +2,12 @@ package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,18 +25,22 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   
   private final JSlider densitySlider;
   
-  private final GlowArrow lowDensityArrow;
+  private final JPanel uiContainer;
+  private final CardLayout uiLayout;
+  
   private final GlowArrow mediumDensityArrow;
-  private final GlowArrow highDensityArrow;
   
   private final JPanel messageContainer;
   private final CardLayout messageLayout;
+  
+  private final static String INTRO_CARD = "intro";
+  private final static String CONTROL_CARD = "control";
   
   private final static String LOW_DENSITY_CARD = "low";
   private final static String MEDIUM_DENSITY_CARD = "medium";
   private final static String HIGH_DENSITY_CARD = "high";
   
-  private final static int PAD = 10; // px
+  private final static int PAD = 20; // px
   
   /**
    * Location of the "low density" arrow, in vehicles/km.
@@ -50,7 +50,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   /**
    * Location of the "medium density" arrow, in vehicles/km.
    */
-  private final static int MEDIUM_DENSITY_INVKM = 40;
+  private final static int MEDIUM_DENSITY_INVKM = 60;
   
   /**
    * Location of the "high density" arrow, in vehicles/km.
@@ -74,34 +74,45 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   public RingRoadGamePanel() {
     setLayout(new BorderLayout());
     
-    JPanel topPanel = new JPanel();
-    topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
-    add(topPanel, BorderLayout.NORTH);
-    
-    JLabel titleLabel = new JLabel("Ring Road Game");
-    titleLabel.setFont(titleLabel.getFont().deriveFont(20f));
-    topPanel.add(Box.createHorizontalStrut(PAD));
-    topPanel.add(titleLabel);
-    
-    JButton backButton = new JButton("< Back");
-    backButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        goBack();
-      }
-    });
-    topPanel.add(Box.createHorizontalGlue());
-    topPanel.add(backButton);
-    
+    //
+    // float UI in the center of the ring road
+    //
     ringRoadCanvas = new RingRoadCanvas();
     ringRoadCanvas.setBorder(
         BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
     ringRoadCanvas.setLayout(new GridBagLayout());
     add(ringRoadCanvas, BorderLayout.CENTER);
     
+    uiContainer = new JPanel();
+    uiLayout = new CardLayout();
+    uiContainer.setLayout(uiLayout);
+    ringRoadCanvas.add(uiContainer);
+    
+    // 
+    // intro screen panel
+    //
+    // note: the font metrics for the title font are wrong, so we have to
+    // put some extra padding in.
+    //
+    JPanel introMessage = new JPanel();
+    introMessage.setLayout(new GridBagLayout()); // float center
+    JLabel playButton = new RoundedButton("play",
+        Resource.TITLE_FONT.deriveFont(72f), 40) {
+      private static final long serialVersionUID = 1L;
+      @Override
+      public void click() {
+        beginGame();
+      }
+    };
+    introMessage.add(playButton);
+    uiContainer.add(introMessage, INTRO_CARD);
+    
+    //
+    // main game panel
+    //
     JPanel controlPanel = new JPanel();
     controlPanel.setLayout(new BorderLayout());
-    ringRoadCanvas.add(controlPanel);
+    uiContainer.add(controlPanel, CONTROL_CARD);
     
     //
     // density slider control
@@ -110,13 +121,9 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
         DENS_MIN_INVKM, DENS_MAX_INVKM, LOW_DENSITY_INVKM);
     densitySlider.setMajorTickSpacing(DENS_MAX_INVKM/10);
     densitySlider.setPaintTicks(true);
+    densitySlider.putClientProperty("JComponent.sizeVariant", "large");
     Hashtable<Integer, Component> labels = new Hashtable<Integer, Component>();
-    lowDensityArrow = new GlowArrow("    ");
-    mediumDensityArrow = new GlowArrow("    ");
-    highDensityArrow = new GlowArrow("    ");
-    labels.put(LOW_DENSITY_INVKM, lowDensityArrow);
-    labels.put(MEDIUM_DENSITY_INVKM, mediumDensityArrow);
-    labels.put(HIGH_DENSITY_INVKM, highDensityArrow);
+    mediumDensityArrow = makeArrow(labels, MEDIUM_DENSITY_INVKM);
     densitySlider.setLabelTable(labels);
     densitySlider.setPaintLabels(true);
     densitySlider.addChangeListener(new ChangeListener() {
@@ -133,17 +140,38 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     messageContainer = new JPanel();
     messageLayout = new CardLayout();
     messageContainer.setLayout(messageLayout);
-    
-    JPanel lowDensityMessage = new JPanel();
-    lowDensityMessage.add(new JLabel("Low Density"));
+        
+    JPanel lowDensityMessage = new MessageBubble();
+    lowDensityMessage.add(Resource.makeStyledTextPane(
+        "When there are not many cars, traffic flows freely.\n" +
+        "Try increasing the flow..."), BorderLayout.CENTER);
     messageContainer.add(lowDensityMessage, LOW_DENSITY_CARD);
     
-    JPanel mediumDensityMessage = new JPanel();
-    mediumDensityMessage.add(new JLabel("Medium Density"));
+    JPanel mediumDensityMessage = new MessageBubble();
+    mediumDensityMessage.add(Resource.makeStyledTextPane(
+        "When the road gets busy, 'stop and go' waves form.\n" +
+        "These are phantom traffic jams.\n\n"), BorderLayout.CENTER);
+    mediumDensityMessage.add(new RoundedButton("Go to Level 2!") {
+      private static final long serialVersionUID = 1L;
+      @Override
+      public void click() {
+        goToNextLevel();
+      }
+    }, BorderLayout.SOUTH);
     messageContainer.add(mediumDensityMessage, MEDIUM_DENSITY_CARD);
     
-    JPanel highDensityMessage = new JPanel();
-    highDensityMessage.add(new JLabel("High Density"));
+    JPanel highDensityMessage = new MessageBubble();
+    highDensityMessage.add(Resource.makeStyledTextPane(
+        "When the amount of traffic gets too close to the road's capacity,\n" +
+        "nobody goes anywhere!\n\n" +
+        "Click the button to go to the next level..."), BorderLayout.CENTER);
+    highDensityMessage.add(new RoundedButton("Go to Level 2!") {
+      private static final long serialVersionUID = 1L;
+      @Override
+      public void click() {
+        goToNextLevel();
+      }
+    }, BorderLayout.SOUTH);
     messageContainer.add(highDensityMessage, HIGH_DENSITY_CARD);
     
     controlPanel.add(messageContainer, BorderLayout.SOUTH);
@@ -151,9 +179,13 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
 
   public void start() {
     ringRoadCanvas.start(42);
-    
     densitySlider.setValue(LOW_DENSITY_INVKM);
     updateDensity();
+    messageLayout.show(messageContainer, INTRO_CARD);
+  }
+  
+  public void beginGame() {
+    uiLayout.show(uiContainer, CONTROL_CARD);
   }
 
   private void updateDensity() {
@@ -165,24 +197,25 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     //
     if (density < LOW_MEDIUM_DENSITY_INVKM) {
       // low density
-      lowDensityArrow.setVisible(false);
       mediumDensityArrow.setVisible(true);
-      highDensityArrow.setVisible(false);
       messageLayout.show(messageContainer, LOW_DENSITY_CARD);
-      
     } else if (density < MEDIUM_HIGH_DENSITY_INVKM) {
       // medium density
-      lowDensityArrow.setVisible(false);
       mediumDensityArrow.setVisible(false);
-      highDensityArrow.setVisible(true);
       messageLayout.show(messageContainer, MEDIUM_DENSITY_CARD);
     } else {
       // high density
-      lowDensityArrow.setVisible(false);
       mediumDensityArrow.setVisible(false);
-      highDensityArrow.setVisible(false);
       messageLayout.show(messageContainer, HIGH_DENSITY_CARD);
     }
+  }
+  
+  private GlowArrow makeArrow(Hashtable<Integer, Component> labels, int density)
+  {
+    GlowArrow arrow = new GlowArrow("    ", new Color(0x9762c8));
+    arrow.setFont(arrow.getFont().deriveFont(24f));
+    labels.put(density, arrow);
+    return arrow;
   }
   
   public void stop() {
@@ -192,22 +225,23 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   /**
    * Called when the user presses the back button.
    */
-  public abstract void goBack();
+  public abstract void goToNextLevel();
   
   /** For testing */
   public static void main(String [] args) {
     JFrame f = new JFrame("ring test");
-    f.setSize(640,480);
+    f.setSize(800,600);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     RingRoadGamePanel p = new RingRoadGamePanel() {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void goBack() {
+      public void goToNextLevel() {
       }
     };
     f.add(p);
     f.setVisible(true);
     p.start();
+    p.beginGame();
   }
 }

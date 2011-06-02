@@ -47,14 +47,16 @@ public class CarTruckFactory implements Constants {
   
   public CarTruckFactory() {
     carColors = new ArrayList<Color>();
-    carColors.add(Color.WHITE);
-    carColors.add(Color.GREEN);
-    carColors.add(Color.MAGENTA);
-    carColors.add(Color.PINK);
+    carColors.add(new Color(0xcf5db2)); // pink
+    carColors.add(new Color(0xebe46a)); // yellow
+    carColors.add(new Color(0x9762c8)); // purple
+    carColors.add(new Color(0xffcc33)); // strong yellow
+    carColors.add(new Color(0x247800)); // dark green
+    carColors.add(new Color(0xdedede)); // silver
     
     truckColors = new ArrayList<Color>();
-    truckColors.add(Color.BLUE);
-    truckColors.add(Color.BLACK);
+    truckColors.add(new Color(0xc90024)); // red
+    truckColors.add(new Color(0x500a91)); // purple
   }
   
   /**

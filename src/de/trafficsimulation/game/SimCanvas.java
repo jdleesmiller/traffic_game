@@ -44,7 +44,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
   /**
    * Target display frame rate, in frames per (real) second.
    */
-  public static final int TARGET_FPS = 20;
+  public static final int TARGET_FPS = 30;
   
   /**
    * Car with center at the origin, driving north (negative y-axis, in the
@@ -56,7 +56,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
   protected final Shape truckTemplate;
   protected final Shape truckBumperTemplate;
   
-  protected static final Color ROAD_COLOR = Color.GRAY;
+  protected static final Color ROAD_COLOR = Color.BLACK;
   protected static final Color LANE_MARKER_COLOR = Color.WHITE;
   
   /// road marking pattern

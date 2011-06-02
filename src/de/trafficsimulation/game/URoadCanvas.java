@@ -23,12 +23,12 @@ public class URoadCanvas extends SimCanvas {
   /**
    * Measure flow for meanFlowOut at this interval, in seconds.
    */
-  public static final double MEAN_FLOW_OUT_INTERVAL = 30;
+  public static final double MEAN_FLOW_OUT_INTERVAL = 60;
 
   /**
    * Smoothing factor for meanFlowOut.
    */
-  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.10;
+  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.20;
   
   private URoadSim sim;
   

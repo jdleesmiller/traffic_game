@@ -17,7 +17,9 @@ import javax.swing.JLabel;
  * fit the smallest dimension of the label, and it is centered in the other
  * dimension.
  * 
- * TODO it should glow or something
+ * The arrow pulses its opacity to draw attention to itself. Note that it does
+ * not have its own repaint timer; it turns out that we don't need one at the
+ * moment.
  */
 public class GlowArrow extends JLabel {
 
@@ -34,8 +36,21 @@ public class GlowArrow extends JLabel {
    */
   private AffineTransform transform;
   
-  public GlowArrow(String text) {
+  private boolean glowing;
+  
+  private final Color baseColor;
+  
+  private final static int OPACITY_MIN = (int)(0.2*255); 
+  private final static int OPACITY_AMPLITUDE = (255 - OPACITY_MIN) / 2;
+  private final static int OPACITY_ORIGIN = OPACITY_MIN + OPACITY_AMPLITUDE;
+  
+  private final static double FREQUENCY = 2; // Hz
+  
+  public GlowArrow(String text, Color baseColor) {
     super(text);
+    this.baseColor = baseColor;
+    this.glowing = true;
+    
     arrow = new GeneralPath();
     arrow.moveTo( 0.0f, -1.0f);
     arrow.lineTo( 1.0f,  0.0f);
@@ -52,7 +67,7 @@ public class GlowArrow extends JLabel {
       public void componentResized(ComponentEvent e) {
         handleResize();
       }
-    });    
+    });
     
     // call once to initialise
     handleResize();
@@ -62,20 +77,36 @@ public class GlowArrow extends JLabel {
     transform = new AffineTransform();
     Utility.transformToFit(this, arrow.getBounds2D(), transform);
   }
-
+  
   @Override
   protected void paintComponent(Graphics g) {
-    Graphics2D g2 = (Graphics2D) g.create(); // must make a copy here
-    
-    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_ON);
-    
-    if (this.isVisible()) {
-      g2.setColor(Color.red);
-      g2.transform(transform);
-      g2.fill(arrow);
+    if (!this.isVisible()) {
+      super.paintComponent(g);
+      return;
     }
     
+    Color color = baseColor;
+    if (isGlowing()) {
+      double pulse = Math.sin(System.currentTimeMillis() / 1000.0 * FREQUENCY);
+      color = new Color(color.getRed(), color.getGreen(), color.getBlue(),
+          OPACITY_ORIGIN + (int)(OPACITY_AMPLITUDE*pulse));
+    }
+    
+    Graphics2D g2 = (Graphics2D) g.create(); // must make a copy here
+    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+        RenderingHints.VALUE_ANTIALIAS_ON);
+    g2.setColor(color);
+    g2.transform(transform);
+    g2.fill(arrow);
+
     super.paintComponent(g);
+  }
+
+  public boolean isGlowing() {
+    return glowing;
+  }
+  
+  public void setGlowing(boolean value) {
+    glowing = value;
   }
 }

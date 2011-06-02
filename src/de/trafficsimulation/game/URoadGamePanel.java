@@ -13,7 +13,6 @@ import java.util.Random;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -41,8 +40,6 @@ import de.trafficsimulation.core.Constants;
 
 public abstract class URoadGamePanel extends JPanel implements Constants {
   private static final long serialVersionUID = 1L;
-  
-  private final JButton backButton;
   
   private final JSlider flowInSlider;
   
@@ -104,39 +101,19 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     setLayout(new BorderLayout());
     
     //
-    // top panel
-    //
-    JPanel topPanel = new JPanel();
-    topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.LINE_AXIS));
-    add(topPanel, BorderLayout.NORTH);
-    
-    JLabel titleLabel = new JLabel("Flow Game");
-    titleLabel.setFont(titleLabel.getFont().deriveFont(20f));
-    topPanel.add(Box.createHorizontalStrut(PAD));
-    topPanel.add(titleLabel);
-    
-    backButton = new JButton("< Back");
-    backButton.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        goBack();
-      }
-    });
-    topPanel.add(Box.createHorizontalGlue());
-    topPanel.add(backButton);
-    
-    //
     // left panel (game controls)
     //
     JPanel controlPanel = new JPanel();
     add(controlPanel, BorderLayout.WEST);
     
     controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
+    controlPanel.setBorder(BorderFactory.createMatteBorder(
+        0, 0, 0, SIM_PAD, Color.BLACK));
     controlPanel.add(Box.createVerticalStrut(PAD));
     controlPanel.add(new JLabel("set flow in on main road (veh/hr):"));
     
-    flowInSlider = new JSlider(0, Q_MAX, Q_INIT2);
-    flowInSlider.setMajorTickSpacing(Q_MAX/4);
+    flowInSlider = new JSlider(0, 3000, Q_INIT2);
+    flowInSlider.setMajorTickSpacing(500);
     flowInSlider.setPaintLabels(true);
     flowInSlider.setPaintTicks(true);
     flowInSlider.addChangeListener(new ChangeListener() {
@@ -150,8 +127,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     
     controlPanel.add(Box.createVerticalStrut(PAD));
     controlPanel.add(new JLabel("set flow in on ramp (veh/hr):"));
-    rampFlowSlider = new JSlider(0, QRMP_MAX, QRMP_INIT2);
-    rampFlowSlider.setMajorTickSpacing(QRMP_MAX/4);
+    rampFlowSlider = new JSlider(0, 500, QRMP_INIT2);
+    rampFlowSlider.setMajorTickSpacing(100);
     rampFlowSlider.setPaintLabels(true);
     rampFlowSlider.setPaintTicks(true);
     rampFlowSlider.addChangeListener(new ChangeListener() {
@@ -214,7 +191,9 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
         URoadCanvas canvas = new URoadCanvas();
         canvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
         canvas.setBorder(BorderFactory.createMatteBorder(
-            SIM_PAD, SIM_PAD, SIM_PAD, SIM_PAD, Color.BLACK));
+            i == 0 ? 0 : SIM_PAD, SIM_PAD,
+            i == SIM_ROWS - 1 ? 0 : SIM_PAD,
+            i == SIM_COLS - 1 ? 0 : SIM_PAD, Color.BLACK));
         simPanel.add(canvas);
         
         canvas.getFloatPanel().add(new JLabel(""));

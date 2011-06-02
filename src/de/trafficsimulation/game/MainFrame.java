@@ -19,7 +19,6 @@ public class MainFrame extends JFrame implements Constants {
 
   private static final long serialVersionUID = 1L;
 
-  private static final String INTRO_CARD = "intro";
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
   private static final String FLOW_GAME_GAME_CARD = "flow_game";
 
@@ -30,7 +29,6 @@ public class MainFrame extends JFrame implements Constants {
   private static final int INACTIVITY_TIMEOUT_MS = 5*60*1000;
 
   private final CardLayout cardLayout;
-  private final IntroPanel introPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
   
@@ -43,32 +41,14 @@ public class MainFrame extends JFrame implements Constants {
     setLayout(cardLayout);
     
     //
-    // game intro card
-    //
-    introPanel = new IntroPanel() {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      public void playRingRoadGame() {
-        showRingRoadGame();
-      }
-      
-      @Override
-      public void playFlowGame() {
-        showFlowGame();
-      }
-    }; 
-    add(introPanel, INTRO_CARD);
-    
-    //
     // ring road game card
     //
     ringRoadGamePanel = new RingRoadGamePanel() {
       private static final long serialVersionUID = 1L;
       
       @Override
-      public void goBack() {
-        showIntro();
+      public void goToNextLevel() {
+        showFlowGame();
       }
     };
     add(ringRoadGamePanel, RING_ROAD_GAME_CARD);
@@ -81,7 +61,8 @@ public class MainFrame extends JFrame implements Constants {
 
       @Override
       public void goBack() {
-        showIntro();
+        //showRingRoadGame();
+        // TODO reset?
       }
     };
     add(flowGamePanel, FLOW_GAME_GAME_CARD);
@@ -92,7 +73,8 @@ public class MainFrame extends JFrame implements Constants {
     inactivityTimer = new Timer(INACTIVITY_TIMEOUT_MS, new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        showIntro();
+        showRingRoadGame();
+        // TODO reset?
       }
     });
     Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
@@ -105,15 +87,8 @@ public class MainFrame extends JFrame implements Constants {
   }
   
   private void stopAll() {
-    introPanel.stop();
     ringRoadGamePanel.stop();
     flowGamePanel.stop();
-  }
-  
-  private void showIntro() {
-    stopAll();
-    cardLayout.show(getContentPane(), INTRO_CARD);
-    introPanel.start();
   }
   
   private void showRingRoadGame() {
@@ -142,10 +117,10 @@ public class MainFrame extends JFrame implements Constants {
         MainFrame f = new MainFrame();
         f.setUndecorated(true); // full screen
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(640, 480);
+        f.setSize(800, 600);
         f.setVisible(true);
         f.setExtendedState(f.getExtendedState() | MAXIMIZED_BOTH);
-        f.showIntro();
+        f.showRingRoadGame();
       }
     });
   }
@@ -175,7 +150,7 @@ public class MainFrame extends JFrame implements Constants {
       //   triad purple: #500a91
       //UIManager.put("nimbusBase", new Color(0xc7e667));
       //UIManager.put("nimbusBlueGrey", new Color(0x648500));
-      //UIManager.put("control", new Color(0x99cc00));
+      UIManager.put("control", Resource.BACKGROUND);
       // nimbusFocus also important
       
       // try to load it up
