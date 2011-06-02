@@ -140,6 +140,7 @@ public class MainFrame extends JFrame implements Constants {
         setLookAndFeel();
         
         MainFrame f = new MainFrame();
+        f.setUndecorated(true); // full screen
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(640, 480);
         f.setVisible(true);
