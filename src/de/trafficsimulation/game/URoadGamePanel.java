@@ -74,7 +74,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
    * Handles running the simulations in the background; null iff not running
    * (i.e. between rounds).
    */
-  private BackgroundAverageRunner simRunner;
+  private BackgroundContinuousRunner simRunner;
  
   private final static int PAD = 10; // px
   
@@ -290,7 +290,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
       simCanvases.get(0).getOnRampRoad().getRoadLengthMeters();
     
     // create the runner; this starts the sims running on background threads
-    simRunner = new BackgroundAverageRunner() {
+    simRunner = new BackgroundContinuousRunner() {
       @Override
       protected URoadSim getNewSim() {
         // each sim gets its own random number sequence; note that Java's
