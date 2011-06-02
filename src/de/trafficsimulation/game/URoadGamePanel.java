@@ -90,12 +90,6 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   private final static int TIME_STEPS_PER_FRAME = 20;
   
   /**
-   * Number of seconds per round. This should be set long enough to collect
-   * enough stats for all in flows, on the machine on which the sim is running.
-   */
-  private static final int ROUND_TIME_SECONDS = 10;
-  
-  /**
    * Update the sim progress meter this often.
    */
   private static final int GAME_PROGRESS_DELAY_MS = 100;
@@ -201,7 +195,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
     JPanel progressPanel = new JPanel();
     scorePanel.add(progressPanel, SCORE_CARD_CALCULATING);
     
-    roundProgressBar = new JProgressBar(0, (int)ROUND_TIME_SECONDS*1000);
+    roundProgressBar = new JProgressBar(0, (int)MIN_RUNS_FOR_ESTIMATE);
     progressPanel.add(roundProgressBar);
     
     JPanel scoreLabelPanel = new JPanel();
@@ -329,6 +323,8 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
   public void start() {
     // set default
     flowInSlider.setValue(Q_INIT2);
+    rampFlowSlider.setValue(QRMP_INIT2);
+    speedSlider.setValue((int)V0_INIT_KMH);
     beginRound();
   }
 

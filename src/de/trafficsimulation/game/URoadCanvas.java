@@ -28,7 +28,7 @@ public class URoadCanvas extends SimCanvas {
   /**
    * Smoothing factor for meanFlowOut.
    */
-  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.15;
+  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.10;
   
   private URoadSim sim;
   
