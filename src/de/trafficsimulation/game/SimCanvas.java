@@ -144,6 +144,21 @@ public abstract class SimCanvas extends JPanel implements Constants {
   }
   
   /**
+   * Stop the paint timer, but don't destroy the sim. It is an error to call
+   * this before the sim has been started, or after it has been stopped.   */
+  public void pause() {
+    timer.stop();
+  }
+  
+  /**
+   * Start the paint timer, but don't create a new sim. It is an error to call
+   * this before the sim has been started, or after it has been stopped.
+   */
+  public void resume() {
+    timer.start();
+  }
+  
+  /**
    * Advance simulation by one time step.
    */
   public abstract void tick();
@@ -212,6 +227,10 @@ public abstract class SimCanvas extends JPanel implements Constants {
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
+    
+    // if we're paused, don't paint anything
+    if (!timer.isRunning())
+      return;
     
     // note: we have to do our drawing on a copy of the original graphics
     // object, in order to preserve the transform etc. for other components

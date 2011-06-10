@@ -16,7 +16,7 @@ import javax.swing.border.AbstractBorder;
  * Draw a border with rounded corners.
  * 
  * The insets are currently set conservatively, at the centers of the corner 
- * arcs.
+ * arcs, unless tight is true.
  */
 public class RoundedBorder extends AbstractBorder {
   private static final long serialVersionUID = 1L;
@@ -29,16 +29,23 @@ public class RoundedBorder extends AbstractBorder {
   private final int inset;
 
   public RoundedBorder() {
-    this(Color.BLACK, null, 1f, 5f);
+    this(Color.BLACK, null, 1f, 5f, false);
   }
   
   public RoundedBorder(Color borderColor, Color innerColor, float cornerRadius, float weight) {
+    this(borderColor, innerColor, cornerRadius, weight, false);
+  }
+  
+  public RoundedBorder(Color borderColor, Color innerColor, float cornerRadius, float weight, boolean tight) {
     this.borderColor = borderColor;
     this.innerColor = innerColor;
     this.weight = weight;
     this.stroke = new BasicStroke(weight);
     this.shape = new RoundRectangle2D.Float();
-    this.inset = (int)Math.ceil(cornerRadius);
+    if (tight)
+      this.inset = (int)Math.ceil(weight);
+    else
+      this.inset = (int)Math.ceil(cornerRadius);
     
     shape.arcwidth = cornerRadius * 2;
     shape.archeight = cornerRadius * 2;

@@ -11,9 +11,9 @@ public class MessageBubble extends JPanel {
   
   private static final long serialVersionUID = 1L;
   
-  private final static int CORNER_RADIUS = 20; // px
+  public final static int CORNER_RADIUS = 20; // px
   
-  private final static int BORDER_WIDTH = 10; // px
+  public final static int BORDER_WIDTH = 10; // px
   
   public MessageBubble() {
     super(new BorderLayout());

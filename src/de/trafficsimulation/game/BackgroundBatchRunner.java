@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Run a give list of simulations in the background using multiple threads.
+ * Run a given list of simulations in the background using multiple threads.
  * 
  * This class handles the threading. Its interface can be safely used from the
  * AWT event dispatch thread (the GUI) without additional synchronization.
