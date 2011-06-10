@@ -33,9 +33,6 @@ public class MicroStreet implements Constants {
   public static final Color colorTruck = new Color(40, 40, 60);
 
   protected List<Moveable> street = new ArrayList<Moveable>();
-  protected List<Double> positions = new ArrayList<Double>();
-  protected List<Integer> lanes = new ArrayList<Integer>();
-  protected List<Double> distances = new ArrayList<Double>();
 
   // neighbours
   protected Moveable vL, vR, hL, hR;
@@ -84,17 +81,6 @@ public class MicroStreet implements Constants {
 
   // ################# end constructor ##########################
 
-  // make actual state available in form of vectors over all vehicles;
-  // protected methods set public vectors to be used for graphical output
-
-  protected List<Double> setPos() {
-    List<Double> temp = new ArrayList<Double>(street.size());
-    for (int i = 0; i < street.size(); i++) {
-      temp.add(street.get(i).position());
-    }
-    return temp;
-  }
-
   protected List<Double> setDistances() { // neglect gaps in front of
                                             // first/last veh
     // on either lane (i<=iFrontCarsBoth)
@@ -106,18 +92,10 @@ public class MicroStreet implements Constants {
       temp.add(i, new Double(-1.));
     }
     for (int i = iFrontCarsBoth + 1; i < street.size(); i++) {
-      int lane = lanes.get(i);
+      int lane = street.get(i).lane();
       int iFront = nextIndexOnLane(lane, i);
-      double distance = positions.get(iFront) - positions.get(i);
+      double distance = street.get(iFront).position() - street.get(i).position();
       temp.add(i, distance);
-    }
-    return temp;
-  }
-
-  protected List<Integer> setLanes() {
-    List<Integer> temp = new ArrayList<Integer>(street.size());
-    for (int i = 0; i < street.size(); i++) {
-      temp.add(street.get(i).lane());
     }
     return temp;
   }
@@ -140,21 +118,17 @@ public class MicroStreet implements Constants {
     translate(dt);
     sort();
 
-    positions = setPos();
-    lanes = setLanes();
-    distances = setDistances();
-
-    ioFlow(dt, qIn, choice_BC); // needs positions etc
     if (choice_Szen == 1) {
       adaptToNewDensity(density);
     }
+    ioFlow(dt, qIn, choice_BC);
   }
 
   // HIER truck => car implementieren!!
 
   protected void adaptToNewDensity(double density) {
     int nCars_wished = (int) (density * getRoadLength() * 2.0);
-    int nCars = positions.size();
+    int nCars = street.size();
     if (nCars_wished > nCars) {
       //System.out.println("nCars_wished=" + nCars_wished + " nCars=" + nCars);
       insertOneVehicle();
@@ -173,15 +147,16 @@ public class MicroStreet implements Constants {
    */
 
   private void insertOneVehicle() {
-
     // determine position and index of front veh
-
-    int nveh = positions.size();
+    int nveh = street.size();
     final double mingap = 10.;
     double maxgap = 0.;
     int i_maxgap = 0;
     double pos_maxgap; // position of vehicle which maxgap in front
     int lane_maxgap; // lane of vehicle which maxgap in front
+    
+    // compute distances between vehicles
+    List<Double> distances = setDistances();
 
     int nleft = 0;
     int nright = 0;
@@ -215,8 +190,8 @@ public class MicroStreet implements Constants {
       lane_maxgap = RIGHT;
       i_maxgap = nveh;
     } else {
-      pos_maxgap = positions.get(i_maxgap);
-      lane_maxgap = lanes.get(i_maxgap);
+      pos_maxgap = street.get(i_maxgap).position();
+      lane_maxgap = street.get(i_maxgap).lane();
     }
     //System.out.println("MicroStreet.insertOneVehicle: maxgap=" + (int) maxgap
     //    + " index=" + i_maxgap + " pos=" + pos_maxgap + " lane=" + lane_maxgap);
@@ -232,7 +207,7 @@ public class MicroStreet implements Constants {
   }
 
   private void removeOneVehicle() {
-    int indexToRemove = Math.abs(random.nextInt()) % (positions.size());
+    int indexToRemove = Math.abs(random.nextInt()) % (street.size());
     street.remove(indexToRemove);
   }
 

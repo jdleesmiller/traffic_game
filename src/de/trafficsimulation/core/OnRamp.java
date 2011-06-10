@@ -34,8 +34,6 @@ public class OnRamp extends MicroStreet {
     accelerate(dt);
     translate(dt);
     
-    positions = setPos();
-    
     inFlow(dt, qRamp);
     mergeToMainRoad(mergingPos);
   }
