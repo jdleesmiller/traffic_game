@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -30,7 +31,7 @@ public class MainFrame extends JFrame implements Constants {
 
   private final CardLayout cardLayout;
   private final RingRoadGamePanel ringRoadGamePanel;
-  private final URoadGamePanel flowGamePanel;
+  private final NewURoadGamePanel flowGamePanel;
   
   private final Timer inactivityTimer;
 
@@ -56,13 +57,13 @@ public class MainFrame extends JFrame implements Constants {
     //
     // flow game card
     //
-    flowGamePanel = new URoadGamePanel() {
+    flowGamePanel = new NewURoadGamePanel() {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void goBack() {
-        //showRingRoadGame();
-        // TODO reset?
+      public void nextLevel() {
+        JOptionPane.showMessageDialog(this, "Sorry! It's not done yet.");
+        showRingRoadGame();
       }
     };
     add(flowGamePanel, FLOW_GAME_GAME_CARD);

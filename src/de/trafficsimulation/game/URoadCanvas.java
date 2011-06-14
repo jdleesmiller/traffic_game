@@ -19,16 +19,6 @@ import de.trafficsimulation.road.URoad;
  * Animation for the 'on ramp' simulation.
  */
 public class URoadCanvas extends SimCanvas {
-
-  /**
-   * Measure flow for meanFlowOut at this interval, in seconds.
-   */
-  public static final double MEAN_FLOW_OUT_INTERVAL = 60;
-
-  /**
-   * Smoothing factor for meanFlowOut.
-   */
-  private static final double MEAN_FLOW_OUT_SMOOTHING_FACTOR = 0.20;
   
   private URoadSim sim;
   
@@ -40,8 +30,6 @@ public class URoadCanvas extends SimCanvas {
   private final Line2D.Double onRampLine;
   
   private final JPanel floatPanel;
-  
-  private URoadFlowMonitor flowMonitor;
   
   public URoadCanvas() {
     super(makeRoads());
@@ -105,8 +93,6 @@ public class URoadCanvas extends SimCanvas {
     sim = new URoadSim(random,
         getURoad().getRoadLengthMeters(),
         getOnRampRoad().getRoadLengthMeters());
-    flowMonitor = new URoadFlowMonitor(sim,
-        MEAN_FLOW_OUT_SMOOTHING_FACTOR, MEAN_FLOW_OUT_INTERVAL);
     super.start(seed);
   }
   
@@ -114,7 +100,6 @@ public class URoadCanvas extends SimCanvas {
   public void stop() {
     super.stop();
     sim = null;
-    flowMonitor = null;
   }
 
   @Override
@@ -122,7 +107,6 @@ public class URoadCanvas extends SimCanvas {
     if (sim == null)
       return;
     sim.tick();
-    flowMonitor.sample();
   }
   
   @Override
@@ -180,16 +164,6 @@ public class URoadCanvas extends SimCanvas {
    */
   public URoadSim getSim() {
     return sim;
-  }
-  
-  /**
-   * Flow of cars out of the simulation.
-   * 
-   * @return null unless running (i.e. unless start has been called and end
-   * has not)
-   */
-  public URoadFlowMonitor getFlowMonitor() {
-    return flowMonitor;
   }
   
   public RoadBase getURoad() {

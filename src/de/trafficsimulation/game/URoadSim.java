@@ -14,8 +14,19 @@ import de.trafficsimulation.core.OnRamp;
  */
 public class URoadSim extends SimBase 
 {
+  /**
+   * Smoothing factor for the mean flow out exponential moving average.
+   */
+  private static final double FLOW_OUT_SMOOTHING_FACTOR = 0.08;
+  
+  /**
+   * Measure flow for meanFlowOut at this interval, in seconds.
+   */
+  private static final double FLOW_OUT_INTERVAL = 60;
+  
   private final MicroStreet street;
   private final OnRamp onRamp;
+  private final FlowMovingAverage meanFlowOut;
   
   // mutable parameters
   protected double qIn = Q_INIT2 / 3600.;
@@ -28,7 +39,7 @@ public class URoadSim extends SimBase
   protected final double p_factorRamp = 0.; // ramp Lanechange factor
   protected final double deltaBRamp = DELTABRAMP_INIT; // ramp Lanechange factor
   protected final double perTr = FRAC_TRUCK_INIT;
-    
+  
   /**
    * 
    * @param uRoadLengthMeters
@@ -55,12 +66,20 @@ public class URoadSim extends SimBase
     // the obstacle at the end is inserted at the end of the visible ramp
     this.onRamp = new OnRamp(random, rampVehicleFactory, this.getStreet(),
         rampLengthMeters, L_RAMP_M, mergingPos);
+    
+    this.meanFlowOut = new FlowMovingAverage(FLOW_OUT_SMOOTHING_FACTOR);
   }
   
   @Override
   public void tick() {
     getStreet().update(TIMESTEP_S, density, qIn);
     getOnRamp().update(TIMESTEP_S, qRamp);
+    
+    if (getTime() - meanFlowOut.getLastUpdateTime() > FLOW_OUT_INTERVAL) {
+      meanFlowOut.update(getTime(), getStreet().getNumCarsOut());
+      getStreet().resetNumCarsOut();
+    }
+    
     super.tick();
   }
 
@@ -76,5 +95,15 @@ public class URoadSim extends SimBase
    */
   public OnRamp getOnRamp() {
     return onRamp;
+  }
+  
+  /**
+   * Exponential moving average estimate of the flow out of the main road, in
+   * cars per second.
+   * 
+   * @return non-negative; in cars per second
+   */
+  public double getMeanFlowOut() {
+    return meanFlowOut.getEstimate();
   }
 }

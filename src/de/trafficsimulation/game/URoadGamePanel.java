@@ -216,7 +216,7 @@ public abstract class URoadGamePanel extends JPanel implements Constants {
         for (URoadCanvas simCanvas : simCanvases) {
           JLabel label = (JLabel) simCanvas.getFloatPanel().getComponent(0);
           label.setText(String.format("%.0f cars / hour",
-              simCanvas.getFlowMonitor().getMeanFlowOut() * 3600));
+              simCanvas.getSim().getMeanFlowOut() * 3600));
         }
         
         // update score, if we have enough data
