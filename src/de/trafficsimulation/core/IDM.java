@@ -12,6 +12,9 @@ package de.trafficsimulation.core;
 
 public abstract class IDM implements MicroModel {
 
+  /**
+   * In meters per second.
+   */
   public double v0;
   public double delta;
   public double a;

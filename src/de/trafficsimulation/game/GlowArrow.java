@@ -40,7 +40,7 @@ public class GlowArrow extends JLabel {
   
   private final Color baseColor;
   
-  private final static int OPACITY_MIN = (int)(0.2*255); 
+  private final static int OPACITY_MIN = (int)(0.5*255); 
   private final static int OPACITY_AMPLITUDE = (255 - OPACITY_MIN) / 2;
   private final static int OPACITY_ORIGIN = OPACITY_MIN + OPACITY_AMPLITUDE;
   

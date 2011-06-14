@@ -145,4 +145,12 @@ public class Utility {
     
     return scale;
   }
+  
+  public static double metersPerSecondToMilesPerHour(double metersPerSecond) {
+    return metersPerSecond * 3600.0 / 1000.0 / 1.6; 
+  }
+  
+  public static double milesPerHourToMetersPerSecond(double milesPerHour) {
+    return milesPerHour / 3600.0 * 1000.0 * 1.6; 
+  }
 }

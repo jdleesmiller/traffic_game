@@ -31,7 +31,7 @@ public class MainFrame extends JFrame implements Constants {
 
   private final CardLayout cardLayout;
   private final RingRoadGamePanel ringRoadGamePanel;
-  private final NewURoadGamePanel flowGamePanel;
+  private final URoadGamePanel flowGamePanel;
   
   private final Timer inactivityTimer;
 
@@ -57,7 +57,7 @@ public class MainFrame extends JFrame implements Constants {
     //
     // flow game card
     //
-    flowGamePanel = new NewURoadGamePanel() {
+    flowGamePanel = new URoadGamePanel() {
       private static final long serialVersionUID = 1L;
 
       @Override

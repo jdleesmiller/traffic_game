@@ -1,7 +1,10 @@
 package de.trafficsimulation.game;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
@@ -28,12 +31,14 @@ public class URoadCanvas extends SimCanvas {
   private final Rectangle2D.Double onRampBarrier;
   private final Line2D.Double onRampEndLine;
   private final Line2D.Double onRampLine;
+  private final Ellipse2D.Double speedLimitCircle;
   
   private final JPanel floatPanel;
   
   public URoadCanvas() {
     super(makeRoads());
     
+    Rectangle2D uBounds = getURoad().getBoundsMeters();
     Rectangle2D rampBounds = getOnRampRoad().getBoundsMeters();
     
     // triangle at the end of the on ramp
@@ -65,6 +70,13 @@ public class URoadCanvas extends SimCanvas {
         rampBounds.getMinY(),
         rampBounds.getMaxX() + rampEndLength - 4,
         rampBounds.getMinY());
+    
+    // speed limit sign
+    double r = 20; // m TODO
+    double speedLimitSignX = uBounds.getMaxX() - r - LANEWIDTH_M;
+    double speedLimitSignY = uBounds.getMinY() + 3 * LANEWIDTH_M - r;
+    speedLimitCircle = new Ellipse2D.Double(speedLimitSignX - r,
+        speedLimitSignY + r, 2*r, 2*r);
     
     // float a panel in the center for display purposes
     setLayout(new GridBagLayout());
@@ -113,6 +125,19 @@ public class URoadCanvas extends SimCanvas {
   protected void paintRoads(Graphics2D g2) {
     super.paintRoads(g2);
     
+    // speed limit sign
+    g2.setColor(Color.WHITE);
+    g2.fill(speedLimitCircle);
+    g2.setColor(Color.BLACK);
+    double mph = Utility.metersPerSecondToMilesPerHour(getSim().getStreet()
+        .getVehicleFactory().getCarIDM().v0);
+    double cx = speedLimitCircle.getCenterX() - speedLimitCircle.getWidth() / 5;
+    double cy = speedLimitCircle.getCenterY() + speedLimitCircle.getWidth() / 5;
+    g2.drawString(String.format("%.0f", mph), (float)cx, (float)cy);
+    g2.setColor(Color.RED);
+    g2.setStroke(new BasicStroke(5));
+    g2.draw(speedLimitCircle);
+    
     // triangle at the end of the on ramp
     g2.setColor(ROAD_COLOR);
     g2.fill(onRampEnd);
@@ -134,8 +159,10 @@ public class URoadCanvas extends SimCanvas {
   protected void paintVehicles(Graphics2D g2) {
     if (sim == null)
       return;
-    paintVehiclesOnStreet(g2, getURoad(), sim.getStreet());
-    paintVehiclesOnStreet(g2, getOnRampRoad(), sim.getOnRamp());
+    synchronized(sim) {
+      paintVehiclesOnStreet(g2, getURoad(), sim.getStreet());
+      paintVehiclesOnStreet(g2, getOnRampRoad(), sim.getOnRamp());
+    }
   }
   
   private static ArrayList<RoadBase> makeRoads()

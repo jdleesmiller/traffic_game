@@ -1,337 +1,194 @@
 package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSlider;
 import javax.swing.Timer;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
-import de.trafficsimulation.core.Constants;
-
-/* TODO 20110519
-- return to main menu after long pause DONE
-- moving average + popup: flow OK / broken on each flow game sim GUI?
-- logos + colors
-- ramp metering game
-+ vsl game
-- change to run background sims for a fixed time DONE
-
-- spin up n bg threads
-- run sims in series
-- still need a warmup
-- just propagate flow updates to the main thread
- */
-
-public abstract class URoadGamePanel extends JPanel implements Constants {
+public class URoadGamePanel extends URoadGameBase {
   private static final long serialVersionUID = 1L;
-  
-  private final JSlider flowInSlider;
-  
-  private final JSlider rampFlowSlider;
-  
-  private final JSlider speedSlider;
-  
-  private final JPanel scorePanel;
-  
-  private final CardLayout scoreCardLayout;
-  
-  private final String SCORE_CARD_SCORE = "score";
-  
-  private final String SCORE_CARD_CALCULATING = "calc";
-  
-  private final JProgressBar roundProgressBar;
-  
-  private final JLabel scoreLabel;
-  
-  private final List<URoadCanvas> simCanvases;
-  
-  /**
-   * Used to update the GUI with the results of the background simulations,
-   * as they're running.
-   */
-  private final Timer gameProgressTimer;
-  
-  /**
-   * Handles running the simulations in the background; null iff not running
-   * (i.e. between rounds).
-   */
-  private BackgroundContinuousRunner simRunner;
- 
-  private final static int PAD = 10; // px
-  
-  private final static int SIM_PAD = 5; // px
-  
-  private final static int SIM_ROWS = 2;
-  private final static int SIM_COLS = 2;
-  
-  /**
-   * Time steps per frame drawn for the visible sims. A large number here makes
-   * them run very fast.
-   */
-  private final static int TIME_STEPS_PER_FRAME = 20;
-  
-  /**
-   * Update the sim progress meter this often.
-   */
-  private static final int GAME_PROGRESS_DELAY_MS = 100;
 
   /**
-   * Don't update the score estimate until we have at least this many runs
-   * finished.
+   * Update the sim flow out meter this often.
    */
-  private static final int MIN_RUNS_FOR_ESTIMATE = 5;
+  private static final int SCORE_TIMER_DELAY_MS = 100;
+  
+  private final static String CARD_HIGH_FLOW = "high";
+  
+  private final static String CARD_MEDIUM_FLOW = "medium";
+  
+  private final static String CARD_OPTIMAL_FLOW = "optimal";
+  
+  private final static String CARD_LOW_FLOW = "low";
+  
+  private final URoadCanvas simCanvas;
+
+  private final Timer scoreTimer; 
+  
+  private BackgroundWarmupRunner warmupPool;
+  
+  /**
+   * Map from flow levels to messages.
+   */
+  private final SortedMap<Integer, String> breaks =
+    new TreeMap<Integer, String>() {
+    private static final long serialVersionUID = 1L;
+    {
+      put(0, CARD_LOW_FLOW);
+      put(1800, CARD_OPTIMAL_FLOW);
+      put(1880, CARD_MEDIUM_FLOW);
+      put(2100, CARD_HIGH_FLOW);
+    }
+  };
   
   public URoadGamePanel() {
-    setLayout(new BorderLayout());
+    MessageBubble highFlowMessageBubble = new MessageBubble();
+    highFlowMessageBubble.add(Resource.makeStyledTextPane(
+        "The junction is congested!\n" +
+        "Drag the slider to reduce the traffic on the main road."),
+        BorderLayout.CENTER);
+    messageContainer.add(highFlowMessageBubble, CARD_HIGH_FLOW);
     
-    //
-    // left panel (game controls)
-    //
-    JPanel controlPanel = new JPanel();
-    add(controlPanel, BorderLayout.WEST);
+    MessageBubble mediumFlowMessageBubble = new MessageBubble();
+    mediumFlowMessageBubble.add(Resource.makeStyledTextPane(
+        "The flow is unstable!\n" +
+        "It may run OK for a while, but flow will eventually break down.\n" +
+        "Drag the slider to reduce the traffic on the main road."),
+        BorderLayout.CENTER);
+    messageContainer.add(mediumFlowMessageBubble, CARD_MEDIUM_FLOW);
     
-    controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
-    controlPanel.setBorder(BorderFactory.createMatteBorder(
-        0, 0, 0, SIM_PAD, Color.BLACK));
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(new JLabel("set flow in on main road (veh/hr):"));
-    
-    flowInSlider = new JSlider(0, 3000, Q_INIT2);
-    flowInSlider.setMajorTickSpacing(500);
-    flowInSlider.setPaintLabels(true);
-    flowInSlider.setPaintTicks(true);
-    flowInSlider.addChangeListener(new ChangeListener() {
+    MessageBubble optimalFlowMessageBubble = new MessageBubble();
+    optimalFlowMessageBubble.add(Resource.makeStyledTextPane(
+        "This flow is pretty close to optimal!"),
+        BorderLayout.CENTER);
+    optimalFlowMessageBubble.add(new RoundedButton("Go to Level 3!") {
+      private static final long serialVersionUID = 1L;
       @Override
-      public void stateChanged(ChangeEvent e) {
-        endRound();
-        beginRound();
+      public void click() {
+        nextLevel();
       }
-    });
-    controlPanel.add(flowInSlider);
+    }, BorderLayout.SOUTH);
+    messageContainer.add(optimalFlowMessageBubble, CARD_OPTIMAL_FLOW);
     
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(new JLabel("set flow in on ramp (veh/hr):"));
-    rampFlowSlider = new JSlider(0, 500, QRMP_INIT2);
-    rampFlowSlider.setMajorTickSpacing(100);
-    rampFlowSlider.setPaintLabels(true);
-    rampFlowSlider.setPaintTicks(true);
-    rampFlowSlider.addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        endRound();
-        beginRound();
-      }
-    });
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(rampFlowSlider);
-    
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(new JLabel("set speed limit (km/h):"));
-    speedSlider = new JSlider((int)V0_MIN_KMH, (int)V0_MAX_KMH,
-        (int)V0_INIT_KMH);
-    speedSlider.setMajorTickSpacing((int)(V0_MAX_KMH/4.0));
-    speedSlider.setPaintLabels(true);
-    speedSlider.setPaintTicks(true);
-    speedSlider.addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        endRound();
-        beginRound();
-      }
-    });
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(speedSlider);
-    
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    controlPanel.add(new JLabel("flow out: "));
-    controlPanel.add(Box.createVerticalStrut(PAD));
-    
-    scorePanel = new JPanel();
-    controlPanel.add(scorePanel);
-    controlPanel.add(Box.createVerticalGlue()); // fill up rest of space
-    
-    scoreCardLayout = new CardLayout();
-    scorePanel.setLayout(scoreCardLayout);
-    
-    JPanel progressPanel = new JPanel();
-    scorePanel.add(progressPanel, SCORE_CARD_CALCULATING);
-    
-    roundProgressBar = new JProgressBar(0, (int)MIN_RUNS_FOR_ESTIMATE);
-    progressPanel.add(roundProgressBar);
-    
-    JPanel scoreLabelPanel = new JPanel();
-    scorePanel.add(scoreLabelPanel, SCORE_CARD_SCORE);
-    
-    scoreLabel = new JLabel();
-    scoreLabelPanel.add(scoreLabel);
-   
-    //
-    // right panel (simulation grid)
-    //
-    JPanel simPanel = new JPanel(new GridLayout(SIM_ROWS, SIM_COLS));
-    simCanvases = new ArrayList<URoadCanvas>();
-    for (int i = 0; i < SIM_ROWS; ++i) {
-      for (int j = 0; j < SIM_COLS; ++j) {
-        URoadCanvas canvas = new URoadCanvas();
-        canvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
-        canvas.setBorder(BorderFactory.createMatteBorder(
-            i == 0 ? 0 : SIM_PAD, SIM_PAD,
-            i == SIM_ROWS - 1 ? 0 : SIM_PAD,
-            j == SIM_COLS - 1 ? 0 : SIM_PAD, Color.BLACK));
-        simPanel.add(canvas);
-        
-        canvas.getFloatPanel().add(new JLabel(""));
-        
-        simCanvases.add(canvas);
-      }
-    }
-    add(simPanel, BorderLayout.CENTER);
+    MessageBubble lowFlowMessageBubble = new MessageBubble();
+    lowFlowMessageBubble.add(Resource.makeStyledTextPane(
+        "The flow is low!\n" +
+        "Drag the slider to increase the traffic on the main road."),
+        BorderLayout.CENTER);
+    messageContainer.add(lowFlowMessageBubble, CARD_LOW_FLOW);
     
     //
-    // set up background threads and results collection for sims
+    // the sim
+    // 
+    simCanvas = new URoadCanvas();
+    simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
+        .createEmptyBorder(PAD, PAD, PAD, PAD), new RoundedBorder(
+        Resource.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
+        MessageBubble.BORDER_WIDTH, true)));
+    simCanvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
+    JLabel flowLabel = new JLabel();
+    flowLabel.setFont(Resource.HEADER_FONT);
+    simCanvas.getFloatPanel().add(flowLabel);
+    gameContainer.add(simCanvas, CARD_GAME);
+    
     //
-    gameProgressTimer = new Timer(GAME_PROGRESS_DELAY_MS, new ActionListener() {
+    // background thread pool for sim warmups; we don't want this to be null,
+    // so we create an empty one to start with
+    //
+    warmupPool = new BackgroundWarmupRunner();
+    
+    //
+    // periodically update the score
+    //
+    scoreTimer = new Timer(SCORE_TIMER_DELAY_MS, new ActionListener() {      
       @Override
       public void actionPerformed(ActionEvent e) {
-        if (simRunner == null)
-          return;
-        
-        // update per-sim flow meter
-        for (URoadCanvas simCanvas : simCanvases) {
-          JLabel label = (JLabel) simCanvas.getFloatPanel().getComponent(0);
-          label.setText(String.format("%.0f cars / hour",
+        JLabel label = (JLabel) simCanvas.getFloatPanel().getComponent(0);
+        URoadSim sim = simCanvas.getSim();
+        if (sim != null) {
+          label.setText(String.format("%.0f cars / hour out",
               simCanvas.getSim().getMeanFlowOut() * 3600));
-        }
-        
-        // update score, if we have enough data
-        if (simRunner.getFlowCount() > MIN_RUNS_FOR_ESTIMATE) {
-          scoreCardLayout.show(scorePanel, SCORE_CARD_SCORE);
-          scoreLabel.setText(String.format("%.0f cars per hour",
-              3600.0 * simRunner.getFlowMean()));
-        } else {
-          roundProgressBar.setValue(simRunner.getFlowCount());
         }
       }
     });
   }
   
-  protected void beginRound() {
-    // each sim uses the same value for qIn (in flow on main road)
-    final double qIn = flowInSlider.getValue() / 3600.;
-    final double qRamp = rampFlowSlider.getValue() / 3600.;
-    final double v0 = speedSlider.getValue();
+  @Override
+  protected void updateFlowIn() {
+    // stop previous run, if any
+    stop();
     
-    // spin up background simulation threads
-    startBackgroundSims(qIn, qRamp, v0);
+    // will have to run some warmups
+    messageCards.show(messageContainer, CARD_WARMUP);
+    gameCards.show(gameContainer, CARD_WARMUP);
     
-    // start sim visualisation
-    for (URoadCanvas canvas : simCanvases) {
-      canvas.start();
-      canvas.getSim().qIn = qIn;
-      canvas.getSim().qRamp = qRamp;
-      canvas.getSim().getStreet().getVehicleFactory().getCarIDM().v0 = v0;
-      canvas.getSim().getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
-      canvas.getSim().getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
-      canvas.getSim().getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
-    }
-    
-    // start the timer that polls the background sim results until all sims
-    // are finished
-    scoreCardLayout.show(scorePanel, SCORE_CARD_CALCULATING);
-    gameProgressTimer.start();
-    roundProgressBar.setValue(0);
-    roundProgressBar.setIndeterminate(true); // TODO HACK
-  }
-  
-  private void startBackgroundSims(final double qIn, final double qRamp,
-      final double v0) {
-    // each sim needs to know how long the roads are; use the first sim canvas
-    // to compute this (but note that they're all identical)
-    final double uRoadLengthMeters =
-      simCanvases.get(0).getURoad().getRoadLengthMeters();
-    final double rampLengthMeters = 
-      simCanvases.get(0).getOnRampRoad().getRoadLengthMeters();
-    
-    // create the runner; this starts the sims running on background threads
-    simRunner = new BackgroundContinuousRunner() {
+    // create new sim, but don't start running yet
+    simCanvas.start();
+    setSimParameters(simCanvas.getSim());
+    simCanvas.pause();
+      
+    // run warmup in the background
+    final int flowIn = flowInSlider.getValue();
+    ArrayList<SimBase> sims = new ArrayList<SimBase>(1);
+    sims.add(simCanvas.getSim());
+    warmupPool = new BackgroundWarmupRunner(sims, WARMUP_SECONDS,
+        new Runnable() {
       @Override
-      protected URoadSim getNewSim() {
-        // each sim gets its own random number sequence; note that Java's
-        // Random() uses more than just the current time to seed the generator
-        // (there is a counter, too), and it handles concurrent access (the
-        // counter is marked volatile)
-        URoadSim sim = new URoadSim(new Random(), uRoadLengthMeters,
-            rampLengthMeters);
-
-        sim.qIn = qIn;
-        sim.qRamp = qRamp;
-        sim.getStreet().getVehicleFactory().getCarIDM().v0 = v0;
-        sim.getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
-        sim.getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
-        sim.getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
-        
-        return sim;
+      public void run() {
+        gameCards.show(gameContainer, CARD_GAME);
+        showFlowMessage(flowIn);
+        simCanvas.resume();
+        scoreTimer.start();
       }
-    };
+    });
   }
   
-  protected void endRound() {
-    gameProgressTimer.stop();
-    for (URoadCanvas canvas : simCanvases) {
-      canvas.stop();
+  private void showFlowMessage(int flowIn) {
+    // note: this loop gives us the keys in ascending order
+    int flowInKey = FLOW_IN_MIN;
+    for (int key : breaks.keySet()) {
+      if (flowIn >= key)
+        flowInKey = key;
     }
-    simRunner.stop();
-  }
-  
-  public void start() {
-    // set default
-    flowInSlider.setValue(Q_INIT2);
-    rampFlowSlider.setValue(QRMP_INIT2);
-    speedSlider.setValue((int)V0_INIT_KMH);
-    beginRound();
+    messageCards.show(messageContainer, breaks.get(flowInKey));
   }
 
-  public void stop() {
-    for (URoadCanvas canvas : simCanvases) {
-      canvas.stop();
-    }
+  /**
+   * Copy parameters from GUI to given sim.
+   * 
+   * @param sim not null
+   */
+  private void setSimParameters(URoadSim sim) {
+    sim.qIn = flowInSlider.getValue() / 3600.;
   }
   
-  /**
-   * Called when the user presses the back button.
-   */
-  public abstract void goBack();
+  public void stop() {
+    scoreTimer.stop();
+    simCanvas.stop();
+    warmupPool.stop();
+  }
+  
+  public void nextLevel() {
+    
+  }
   
   /** For testing */
   public static void main(String [] args) {
     JFrame f = new JFrame("ring test");
-    f.setSize(640,480);
+    f.setSize(1024,600);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     URoadGamePanel p = new URoadGamePanel() {
       private static final long serialVersionUID = 1L;
-
-      @Override
-      public void goBack() {
-      }
     };
     f.add(p);
     f.setVisible(true);
     p.start();
-  }
+  } 
 }

@@ -113,7 +113,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     JLabel titleLabel = new JLabel("ring road");
     titleLabel.setHorizontalAlignment(JLabel.CENTER);
     titleLabel.setFont(Resource.TITLE_FONT.deriveFont(48f));
-    titleLabel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
+    titleLabel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, 2*PAD, PAD));
     controlPanel.add(titleLabel, BorderLayout.NORTH);
     
     //
@@ -142,6 +142,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     messageContainer = new JPanel();
     messageLayout = new CardLayout();
     messageContainer.setLayout(messageLayout);
+    messageContainer.setBorder(BorderFactory.createEmptyBorder(PAD, 0, 0, 0));
         
     JPanel lowDensityMessage = new MessageBubble();
     lowDensityMessage.add(Resource.makeStyledTextPane(

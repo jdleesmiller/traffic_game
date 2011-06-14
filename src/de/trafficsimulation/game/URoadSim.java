@@ -17,12 +17,12 @@ public class URoadSim extends SimBase
   /**
    * Smoothing factor for the mean flow out exponential moving average.
    */
-  private static final double FLOW_OUT_SMOOTHING_FACTOR = 0.08;
+  private static final double FLOW_OUT_SMOOTHING_FACTOR = 0.01;
   
   /**
    * Measure flow for meanFlowOut at this interval, in seconds.
    */
-  private static final double FLOW_OUT_INTERVAL = 60;
+  private static final double FLOW_OUT_INTERVAL = 15;
   
   private final MicroStreet street;
   private final OnRamp onRamp;
@@ -71,7 +71,7 @@ public class URoadSim extends SimBase
   }
   
   @Override
-  public void tick() {
+  public synchronized void tick() {
     getStreet().update(TIMESTEP_S, density, qIn);
     getOnRamp().update(TIMESTEP_S, qRamp);
     
