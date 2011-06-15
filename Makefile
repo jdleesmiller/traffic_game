@@ -31,6 +31,7 @@ build:
 
 # build executable jar file for distribution
 $(JAR): build
+	cp -r src/de/trafficsimulation/game/res bin/de/trafficsimulation/game/res
 	jar cfe $@ de.trafficsimulation.game.MainFrame -C bin .
 
 clean:
