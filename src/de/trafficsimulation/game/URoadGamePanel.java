@@ -42,8 +42,8 @@ public class URoadGamePanel extends URoadGameBase {
     private static final long serialVersionUID = 1L;
     {
       put(0, CARD_LOW_FLOW);
-      put(1800, CARD_OPTIMAL_FLOW);
-      put(1880, CARD_MEDIUM_FLOW);
+      put(1700, CARD_OPTIMAL_FLOW);
+      put(1800, CARD_MEDIUM_FLOW);
       put(2100, CARD_HIGH_FLOW);
     }
   };
