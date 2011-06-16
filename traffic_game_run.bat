@@ -1,1 +1,1 @@
-java -jar de.trafficsimulation.game.jar
+javaw -jar de.trafficsimulation.game.jar %1

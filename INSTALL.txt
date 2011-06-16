@@ -1,0 +1,72 @@
+-- SETUP NOTES FOR GREEN GAME --
+   on Windows 7
+
+Fiddle with Main Display Setting
+  - Touch screen input is apparently reversed sometimes (that is, touch input on display 1
+    affects display 2, and vice versa).
+  - Not sure exactly what the patttern is, but switching the main display to the other display
+    has fixed the problem for me in the past.
+  - Right click on desktop; go to Change Resolution
+  - Try making the other monitor the main monitor.
+  
+Hide the Task Bar in the middle of the two screens
+  - Unlock it, set it to autohide, and then drag it to the right edge of the
+    left screen (or the left edge of the right screen).
+  - This seems to make it invisible, after a short delay.
+
+Disable Screen-Off and Sleep
+  - Control Panel > Power Options > Choose when to turn off the display
+  - Set to Never display, and Never for sleep
+
+Disable Screensaver (seems to be disabled by default now)
+  - Right click on desktop; go to Personalize
+  - Screen Saver (bottom right) should say None
+
+Remove Windows logos
+  - Right click on desktop; go to Personalize
+  - Change Picture location to "solid colors" and choose More... (bottom left)
+  - Change to Red 153, Green 204, Blue 0 (zero)
+
+Disable onscreen keyboard
+  - Move finger to center left of one of the screens to bring up keyboard.
+  - Go to Tools > Options.
+  - Uncheck "For touch input, show the icon next to the text box"
+  - Uncheck "Use the Input Panel tab"
+
+Disable "Flicks" (gesture input)
+  - Go to system tray. Right click on the Flicks icon.
+  - Choose "Turn off Flicks"
+
+Disable Multitouch Gestures
+  - Control Panel > Pen and Touch > Touch
+  - Uncheck "Enable multi-touch gestures and inking"
+
+Disable Press and Hold for right click?
+  - Can't seem to do this.
+
+Calibrate Touch Screens
+  - Control Panel > Tablet PC Settings > Display 
+  - Calibrate for both displays.
+
+Set IE9 home page to blank.
+  - Internet options (gear icon in top right).
+
+Tell it not to hide file extensions.
+  - this is annoying for development
+  - Control Panel > Folder Options > View > Hide file extensions for known types (uncheck)
+
+Set PATH to point to JRE
+  - WinKey + Break > Advanced System Settings > Advanced > Environmental Variables
+  - Create a new User Variable called PATH with value
+%PATH%;C:\Program Files\Java\jre6\bin;C:\Program Files\Java\jdk1.6.0_26\bin
+  - Note: The 64-bit JDK + bundled JRE seems to put the files in these paths;
+    the paths may not be the same, depending on how Java was installed (and updates etc.)
+
+Software to install:
+  - Microsoft Security Essentials
+  - Java Development Kit (JDK)
+  - MSYSGIT http://help.github.com/win-set-up-git/
+  - Eclipse
+    - Help > Install New Software
+    - Work with: Helios
+    - Collaboration > Eclipse EGit

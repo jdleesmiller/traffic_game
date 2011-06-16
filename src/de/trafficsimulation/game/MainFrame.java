@@ -3,6 +3,9 @@ package de.trafficsimulation.game;
 import java.awt.AWTEvent;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
@@ -27,33 +30,33 @@ public class MainFrame extends JFrame implements Constants {
    * Reload the intro panel if there has not been any activity after this
    * interval, in milliseconds.
    */
-  private static final int INACTIVITY_TIMEOUT_MS = 5*60*1000;
+  private static final int INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 
   private final CardLayout cardLayout;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
-  
+
   private final Timer inactivityTimer;
 
-  public MainFrame() {
-    super("Traffic Flow Game");
+  public MainFrame(GraphicsConfiguration gc) {
+    super(gc);
 
     cardLayout = new CardLayout();
     setLayout(cardLayout);
-    
+
     //
     // ring road game card
     //
     ringRoadGamePanel = new RingRoadGamePanel() {
       private static final long serialVersionUID = 1L;
-      
+
       @Override
       public void goToNextLevel() {
         showFlowGame();
       }
     };
     add(ringRoadGamePanel, RING_ROAD_GAME_CARD);
-    
+
     //
     // flow game card
     //
@@ -67,7 +70,7 @@ public class MainFrame extends JFrame implements Constants {
       }
     };
     add(flowGamePanel, FLOW_GAME_GAME_CARD);
-    
+
     //
     // inactivity sensing (return to intro panel if no mouse activity)
     //
@@ -86,49 +89,50 @@ public class MainFrame extends JFrame implements Constants {
     }, AWTEvent.MOUSE_MOTION_EVENT_MASK + AWTEvent.MOUSE_EVENT_MASK);
     inactivityTimer.start();
   }
-  
+
   private void stopAll() {
     ringRoadGamePanel.stop();
     flowGamePanel.stop();
   }
-  
+
   private void showRingRoadGame() {
     stopAll();
     cardLayout.show(getContentPane(), RING_ROAD_GAME_CARD);
     ringRoadGamePanel.start();
   }
-  
+
   private void showFlowGame() {
     stopAll();
     cardLayout.show(getContentPane(), FLOW_GAME_GAME_CARD);
     flowGamePanel.start();
   }
-  
+
   /**
    * Application entry point.
    * 
-   * @param args ignored
+   * @param args
+   *          ignored
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
         setLookAndFeel();
         
-        MainFrame f = new MainFrame();
-        f.setUndecorated(true); // full screen
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(800, 600);
-        f.setVisible(true);
-        f.setExtendedState(f.getExtendedState() | MAXIMIZED_BOTH);
+        int device = 0;
+        if (args.length > 0) {
+          device = Integer.parseInt(args[0]);
+        }
+
+        MainFrame f = createOnMonitor(device);
         f.showRingRoadGame();
       }
     });
   }
-    
-    // TODO see 
-    // http://www.jasperpotts.com/blog/2008/08/skinning-a-slider-with-nimbus/
-    // http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/color.html
+
+  // TODO see
+  // http://www.jasperpotts.com/blog/2008/08/skinning-a-slider-with-nimbus/
+  // http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/color.html
 
   private static void setLookAndFeel() {
     // try to find the fancy Nimbus look and feel
@@ -139,21 +143,21 @@ public class MainFrame extends JFrame implements Constants {
         break;
       }
     }
-    
+
     if (nimbusClassName != null) {
       // set up nice colors
-      // red:    #cc3333
+      // red: #cc3333
       // yellow: #ffcc33
-      // green:  #99cc00
-      //   light: #c7e667
-      //   dark:  #648500
-      //   triad red:    #c90024
-      //   triad purple: #500a91
-      //UIManager.put("nimbusBase", new Color(0xc7e667));
-      //UIManager.put("nimbusBlueGrey", new Color(0x648500));
+      // green: #99cc00
+      // light: #c7e667
+      // dark: #648500
+      // triad red: #c90024
+      // triad purple: #500a91
+      // UIManager.put("nimbusBase", new Color(0xc7e667));
+      // UIManager.put("nimbusBlueGrey", new Color(0x648500));
       UIManager.put("control", Resource.BACKGROUND);
       // nimbusFocus also important
-      
+
       // try to load it up
       try {
         UIManager.setLookAndFeel(nimbusClassName);
@@ -161,5 +165,31 @@ public class MainFrame extends JFrame implements Constants {
         // just give up
       }
     }
+  }
+
+  /**
+   * 
+   * @param device non-negative; capped at the number of displays
+   * @return not null
+   */
+  private static MainFrame createOnMonitor(int device) {
+    // get device info for all screens
+    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    GraphicsDevice[] gs = ge.getScreenDevices();
+    if (device >= gs.length)
+      device = gs.length - 1;
+    GraphicsDevice gd = gs[device];
+    GraphicsConfiguration gc = gd.getDefaultConfiguration();
+    
+    // create the frame on the selected device
+    MainFrame f = new MainFrame(gc);
+    f.setUndecorated(true); // full screen
+    f.setAlwaysOnTop(true);
+    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+    f.setSize(800, 600);
+    f.setVisible(true);
+    f.setExtendedState(f.getExtendedState() | MAXIMIZED_BOTH);
+    
+    return f;
   }
 }
