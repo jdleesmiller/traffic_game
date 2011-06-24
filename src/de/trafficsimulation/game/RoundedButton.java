@@ -36,12 +36,8 @@ public class RoundedButton extends JLabel {
     
     addMouseListener(new MouseAdapter() {
       @Override
-      public void mouseClicked(MouseEvent e) {
-        click();
-      }
-
-      @Override
-      public void mouseDragged(MouseEvent e) {
+      public void mouseReleased(MouseEvent e) {
+        // this gets us both clicks and drags
         click();
       }
     });
