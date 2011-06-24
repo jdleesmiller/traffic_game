@@ -1,8 +1,12 @@
 package de.trafficsimulation.game;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Random;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import de.trafficsimulation.road.ArcRoad;
 import de.trafficsimulation.road.RoadBase;
@@ -44,6 +48,13 @@ public class RingRoadCanvas extends SimCanvas {
     if (sim == null)
       return;
     sim.tick();
+  }
+  
+  @Override
+  protected void paintAnnotations(Graphics2D g2) {
+    if (sim == null)
+      return;
+    g2.drawString("min speed: " + sim.getStreet().getMinSpeed(), 10, 50);
   }
 
   @Override

@@ -15,7 +15,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 
 import de.trafficsimulation.core.Constants;
 
@@ -23,6 +22,7 @@ public class MainFrame extends JFrame implements Constants {
 
   private static final long serialVersionUID = 1L;
 
+  private static final String COVER_CARD = "cover";
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
   private static final String FLOW_GAME_GAME_CARD = "flow_game";
 
@@ -33,6 +33,7 @@ public class MainFrame extends JFrame implements Constants {
   private static final int INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 
   private final CardLayout cardLayout;
+  private final CoverPanel coverPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
 
@@ -40,9 +41,21 @@ public class MainFrame extends JFrame implements Constants {
 
   public MainFrame(GraphicsConfiguration gc) {
     super(gc);
-
+    
     cardLayout = new CardLayout();
     setLayout(cardLayout);
+
+    //
+    // cover panel card
+    //
+    coverPanel = new CoverPanel() {
+      private static final long serialVersionUID = 1L;
+      @Override
+      public void onPlayClicked() {
+        showRingRoadGame();
+      }
+    };
+    add(coverPanel, COVER_CARD);
 
     //
     // ring road game card
@@ -77,8 +90,7 @@ public class MainFrame extends JFrame implements Constants {
     inactivityTimer = new Timer(INACTIVITY_TIMEOUT_MS, new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        showRingRoadGame();
-        // TODO reset?
+        showCover();
       }
     });
     Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
@@ -93,6 +105,13 @@ public class MainFrame extends JFrame implements Constants {
   private void stopAll() {
     ringRoadGamePanel.stop();
     flowGamePanel.stop();
+    coverPanel.stop();
+  }
+  
+  private void showCover() {
+    stopAll();
+    cardLayout.show(getContentPane(), COVER_CARD);
+    coverPanel.start();
   }
 
   private void showRingRoadGame() {
@@ -117,7 +136,8 @@ public class MainFrame extends JFrame implements Constants {
     EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
-        setLookAndFeel();
+        //setLookAndFeel();
+    	UIManager.put("Panel.background", UI.BACKGROUND);
         
         int device = 0;
         if (args.length > 0) {
@@ -125,6 +145,7 @@ public class MainFrame extends JFrame implements Constants {
         }
 
         MainFrame f = createOnMonitor(device);
+        // TODO f.showCover();
         f.showRingRoadGame();
       }
     });
@@ -134,6 +155,7 @@ public class MainFrame extends JFrame implements Constants {
   // http://www.jasperpotts.com/blog/2008/08/skinning-a-slider-with-nimbus/
   // http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/color.html
 
+  /*
   private static void setLookAndFeel() {
     // try to find the fancy Nimbus look and feel
     String nimbusClassName = null;
@@ -155,7 +177,7 @@ public class MainFrame extends JFrame implements Constants {
       // triad purple: #500a91
       // UIManager.put("nimbusBase", new Color(0xc7e667));
       // UIManager.put("nimbusBlueGrey", new Color(0x648500));
-      UIManager.put("control", Resource.BACKGROUND);
+      UIManager.put("control", UI.BACKGROUND);
       // nimbusFocus also important
 
       // try to load it up
@@ -166,6 +188,7 @@ public class MainFrame extends JFrame implements Constants {
       }
     }
   }
+  */
 
   /**
    * 

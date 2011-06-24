@@ -534,8 +534,23 @@ public class MicroStreet implements Constants {
   public void resetNumCarsOut() {
     numCarsOut = 0;
   }
-
+  
   public CarTruckFactory getVehicleFactory() {
     return vehicleFactory;
+  }
+  
+  /**
+   * The lowest speed of any car on the street.
+   * 
+   * @return in meters per second
+   */
+  public double getMinSpeed() {
+    double min = Double.POSITIVE_INFINITY;
+    for (Moveable car : street) {
+      if (car.velocity() < min) {
+        min = car.velocity();
+      }
+    }
+    return min;
   }
 }

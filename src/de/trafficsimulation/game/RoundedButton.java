@@ -20,12 +20,14 @@ public class RoundedButton extends JLabel {
    */
   private static final long serialVersionUID = 1L;
   
-  private static final int CORNER_RADIUS = 20; // px
+  public static final int CORNER_RADIUS = 20; // px
   
-  private static final int BORDER_WIDTH = 4; // px
+  public static final int BORDER_WIDTH = 4; // px
+  
+  public static final float DEFAULT_FONT_SIZE = 18f;
   
   public RoundedButton(String text) {
-    this(text, Resource.HEADER_FONT.deriveFont(18f), CORNER_RADIUS);
+    this(text, UI.HEADER_FONT.deriveFont(18f), CORNER_RADIUS);
   }
   
   public RoundedButton(String text, Font font, int cornerRadius) {
@@ -37,7 +39,7 @@ public class RoundedButton extends JLabel {
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseReleased(MouseEvent e) {
-        // this gets us both clicks and drags
+        // this catches both clicks and drags
         click();
       }
     });

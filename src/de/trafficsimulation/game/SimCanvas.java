@@ -239,12 +239,20 @@ public abstract class SimCanvas extends JPanel implements Constants {
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON);
     
+    paintAnnotations(g2);
+    
     g2.transform(metersToPixels);
     
     paintRoads(g2);
     paintVehicles(g2);
   }
   
+  /**
+   * Called to paint things before the metersToPixels transform is applied.
+   */
+  protected void paintAnnotations(Graphics2D g2) {
+  }
+
   /**
    * Paint roads and lane markers.
    * 

@@ -70,7 +70,7 @@ public abstract class URoadGameBase extends JPanel {
     
     JLabel titleLabel = new JLabel("junction");
     titleLabel.setHorizontalAlignment(JLabel.CENTER);
-    titleLabel.setFont(Resource.TITLE_FONT.deriveFont(48f));
+    titleLabel.setFont(UI.TITLE_FONT.deriveFont(48f));
     titleLabel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, 2*PAD, PAD));
     controlPanel.add(titleLabel, BorderLayout.NORTH);
     
@@ -95,7 +95,7 @@ public abstract class URoadGameBase extends JPanel {
     flowPanel.add(messageContainer, BorderLayout.CENTER);
     
     MessageBubble warmupMessageBubble = new MessageBubble();
-    warmupMessageBubble.add(Resource.makeStyledTextPane(
+    warmupMessageBubble.add(UI.makeStyledTextPane(
         "Starting Simulation..."), BorderLayout.CENTER);
     messageContainer.add(warmupMessageBubble, CARD_WARMUP);
     

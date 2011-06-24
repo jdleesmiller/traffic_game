@@ -38,7 +38,7 @@ public class URoadSpeedGamePanel extends URoadGameBase {
     // in-game message 
     //
     MessageBubble mediumFlowMessageBubble = new MessageBubble();
-    mediumFlowMessageBubble.add(Resource.makeStyledTextPane(
+    mediumFlowMessageBubble.add(UI.makeStyledTextPane(
         "Lower speed limits lead to higher capacity."),
         BorderLayout.CENTER);
     messageContainer.add(mediumFlowMessageBubble, CARD_GAME);
@@ -52,7 +52,7 @@ public class URoadSpeedGamePanel extends URoadGameBase {
       URoadCanvas simCanvas = new URoadCanvas();
       simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
           .createEmptyBorder(PAD, PAD, PAD, PAD), new RoundedBorder(
-          Resource.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
+          UI.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
           MessageBubble.BORDER_WIDTH, true)));
       simCanvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
       simCanvas.getFloatPanel().add(new JLabel());

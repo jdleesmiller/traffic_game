@@ -19,7 +19,7 @@ public class MessageBubble extends JPanel {
     super(new BorderLayout());
     
     setOpaque(true);
-    setBorder(new RoundedBorder(Resource.BACKGROUND_HIGHLIGHT, Color.WHITE,
+    setBorder(new RoundedBorder(UI.BACKGROUND_HIGHLIGHT, Color.WHITE,
         CORNER_RADIUS, BORDER_WIDTH));
   }
 }

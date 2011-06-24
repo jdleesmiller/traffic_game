@@ -33,8 +33,15 @@ public interface Moveable {
 
   public void setColor(Color color);
 
+  /**
+   * 
+   * @return in meters
+   */
   public double position();
 
+  /**
+   * @return in meters per second
+   */
   public double velocity();
 
   public int lane();

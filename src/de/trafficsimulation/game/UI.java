@@ -13,7 +13,7 @@ import javax.swing.text.StyledDocument;
 /**
  * Fonts, images, some general GUI settings.
  */
-public class Resource {
+public class UI {
   public static final Font TITLE_FONT =
     loadTTF("SpottyFont.ttf").deriveFont(48f);
   
@@ -22,6 +22,11 @@ public class Resource {
   
   public static final Font BODY_FONT =
     loadTTF("Transport Medium.ttf").deriveFont(18f);
+  
+  /**
+   * Default spacer size, in pixels.
+   */
+  public static final int PAD = 10;
 
   /**
    * The main background color.
@@ -34,6 +39,11 @@ public class Resource {
   public static final Color BACKGROUND_HIGHLIGHT = BACKGROUND.brighter();
   
   /**
+   * Triad complement to the background.
+   */
+  public static final Color PURPLE = new Color(0x500a91);
+  
+  /**
    * A lighter shade of the main background color.
    */
   //public static final Color FEATURE = new Color();
@@ -44,7 +54,7 @@ public class Resource {
 
   private static Font loadTTF(String fileName) {
     try {
-      InputStream is = Resource.class.getResourceAsStream(
+      InputStream is = UI.class.getResourceAsStream(
           getResourceName(fileName));
       return Font.createFont(Font.TRUETYPE_FONT, is);
     } catch (Exception ex) {

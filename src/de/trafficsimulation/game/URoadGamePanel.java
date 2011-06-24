@@ -50,14 +50,14 @@ public class URoadGamePanel extends URoadGameBase {
   
   public URoadGamePanel() {
     MessageBubble highFlowMessageBubble = new MessageBubble();
-    highFlowMessageBubble.add(Resource.makeStyledTextPane(
+    highFlowMessageBubble.add(UI.makeStyledTextPane(
         "The junction is congested!\n" +
         "Drag the slider to reduce the traffic on the main road."),
         BorderLayout.CENTER);
     messageContainer.add(highFlowMessageBubble, CARD_HIGH_FLOW);
     
     MessageBubble mediumFlowMessageBubble = new MessageBubble();
-    mediumFlowMessageBubble.add(Resource.makeStyledTextPane(
+    mediumFlowMessageBubble.add(UI.makeStyledTextPane(
         "The flow is unstable!\n" +
         "It may run OK for a while, but flow will eventually break down.\n" +
         "Drag the slider to reduce the traffic on the main road."),
@@ -65,7 +65,7 @@ public class URoadGamePanel extends URoadGameBase {
     messageContainer.add(mediumFlowMessageBubble, CARD_MEDIUM_FLOW);
     
     MessageBubble optimalFlowMessageBubble = new MessageBubble();
-    optimalFlowMessageBubble.add(Resource.makeStyledTextPane(
+    optimalFlowMessageBubble.add(UI.makeStyledTextPane(
         "This flow is pretty close to optimal!"),
         BorderLayout.CENTER);
     optimalFlowMessageBubble.add(new RoundedButton("Go to Level 3!") {
@@ -78,7 +78,7 @@ public class URoadGamePanel extends URoadGameBase {
     messageContainer.add(optimalFlowMessageBubble, CARD_OPTIMAL_FLOW);
     
     MessageBubble lowFlowMessageBubble = new MessageBubble();
-    lowFlowMessageBubble.add(Resource.makeStyledTextPane(
+    lowFlowMessageBubble.add(UI.makeStyledTextPane(
         "The flow is low!\n" +
         "Drag the slider to increase the traffic on the main road."),
         BorderLayout.CENTER);
@@ -90,11 +90,11 @@ public class URoadGamePanel extends URoadGameBase {
     simCanvas = new URoadCanvas();
     simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
         .createEmptyBorder(PAD, PAD, PAD, PAD), new RoundedBorder(
-        Resource.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
+        UI.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
         MessageBubble.BORDER_WIDTH, true)));
     simCanvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
     JLabel flowLabel = new JLabel();
-    flowLabel.setFont(Resource.HEADER_FONT);
+    flowLabel.setFont(UI.HEADER_FONT);
     simCanvas.getFloatPanel().add(flowLabel);
     gameContainer.add(simCanvas, CARD_GAME);
     
