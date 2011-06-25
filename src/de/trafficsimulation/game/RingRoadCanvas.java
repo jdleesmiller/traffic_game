@@ -50,7 +50,8 @@ public class RingRoadCanvas extends SimCanvas {
   protected void paintAnnotations(Graphics2D g2) {
     if (sim == null)
       return;
-    g2.drawString("min speed: " + sim.getStreet().getMinSpeed(), 10, 50);
+    g2.drawString(String.format("min speed: %.1fm/s",
+        sim.getStreet().getMinSpeed()), 10, 50);
   }
 
   @Override

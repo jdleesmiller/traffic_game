@@ -129,8 +129,7 @@ public class URoadCanvas extends SimCanvas {
     g2.setColor(Color.WHITE);
     g2.fill(speedLimitCircle);
     g2.setColor(Color.BLACK);
-    double mph = Utility.metersPerSecondToMilesPerHour(getSim().getStreet()
-        .getVehicleFactory().getCarIDM().v0);
+    double mph = Utility.metersPerSecondToMilesPerHour(getSim().getSpeedLimit());
     double cx = speedLimitCircle.getCenterX() - speedLimitCircle.getWidth() / 5;
     double cy = speedLimitCircle.getCenterY() + speedLimitCircle.getWidth() / 5;
     g2.drawString(String.format("%.0f", mph), (float)cx, (float)cy);

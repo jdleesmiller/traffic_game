@@ -2,7 +2,6 @@ package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -85,7 +84,10 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
 
   public RingRoadGamePanel() {
     setLayout(new BorderLayout());
-
+    
+    //
+    // title bar
+    //
     GameChoicePanel titleBar = new GameChoicePanel(false, "phantom jams", true) {
       private static final long serialVersionUID = 1L;
 
@@ -116,10 +118,6 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
         INITIAL_DENSITY_INVKM, HINT_DENSITY_INVKM) {
       private static final long serialVersionUID = 1L;
       {
-        setBackground(Color.WHITE);
-        setKnobColor(UI.PURPLE);
-        setRampColor(new Color(0xcccccc));
-        setHintColor(UI.PURPLE.brighter());
         setBorder(BorderFactory.createEmptyBorder(0, 0, UI.PAD, 0));
       }
 

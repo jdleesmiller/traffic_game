@@ -29,7 +29,14 @@ public class URoadSim extends SimBase
   private final FlowMovingAverage meanFlowOut;
   
   // mutable parameters
+  /**
+   * Target flow into the main road, in vehicles per second. 
+   */
   protected double qIn = Q_INIT2 / 3600.;
+  
+  /**
+   * Target flow into the on ramp, in vehicles per second. 
+   */
   protected double qRamp = QRMP_INIT2 / 3600.;
     
   protected final double density = 0.001 * DENS_INIT_INVKM; // avg. density closed s.
@@ -105,5 +112,29 @@ public class URoadSim extends SimBase
    */
   public double getMeanFlowOut() {
     return meanFlowOut.getEstimate();
+  }
+  
+  /**
+   * Current speed limit. The speed limits are actually set separately for
+   * every street and vehicle class; this method just returns the one on the
+   * main road for cars.
+   *  
+   * @return positive; in meters per second
+   */
+  public double getSpeedLimit() {
+    return getStreet().getVehicleFactory().getCarIDM().v0;
+  }
+  
+  /**
+   * Set speed limit on all of the vehicle factories; this affects only cars
+   * that will be created in the future.
+   * 
+   * @param speedLimit in meters per second
+   */
+  public void setSpeedLimit(double speedLimit) {
+    getStreet().getVehicleFactory().getCarIDM().v0 = speedLimit;
+    getStreet().getVehicleFactory().getTruckIDM().v0 = speedLimit;
+    getOnRamp().getVehicleFactory().getCarIDM().v0 = speedLimit;
+    getOnRamp().getVehicleFactory().getTruckIDM().v0 = speedLimit;
   }
 }

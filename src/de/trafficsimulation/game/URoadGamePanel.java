@@ -1,6 +1,7 @@
 package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.TreeMap;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class URoadGamePanel extends URoadGameBase {
@@ -49,40 +51,38 @@ public class URoadGamePanel extends URoadGameBase {
   };
   
   public URoadGamePanel() {
-    MessageBubble highFlowMessageBubble = new MessageBubble();
-    highFlowMessageBubble.add(UI.makeStyledTextPane(
+    super("flow breakdown", true);
+    JPanel highFlowMessage = new JPanel();
+    highFlowMessage.setBackground(Color.WHITE);
+    highFlowMessage.add(UI.makeStyledTextPane(
         "The junction is congested!\n" +
         "Drag the slider to reduce the traffic on the main road."),
         BorderLayout.CENTER);
-    messageContainer.add(highFlowMessageBubble, CARD_HIGH_FLOW);
+    messageContainer.add(highFlowMessage, CARD_HIGH_FLOW);
     
-    MessageBubble mediumFlowMessageBubble = new MessageBubble();
-    mediumFlowMessageBubble.add(UI.makeStyledTextPane(
+    JPanel mediumFlowMessage = new JPanel();
+    mediumFlowMessage.setBackground(Color.WHITE);
+    mediumFlowMessage.add(UI.makeStyledTextPane(
         "The flow is unstable!\n" +
         "It may run OK for a while, but flow will eventually break down.\n" +
         "Drag the slider to reduce the traffic on the main road."),
         BorderLayout.CENTER);
-    messageContainer.add(mediumFlowMessageBubble, CARD_MEDIUM_FLOW);
+    messageContainer.add(mediumFlowMessage, CARD_MEDIUM_FLOW);
     
-    MessageBubble optimalFlowMessageBubble = new MessageBubble();
-    optimalFlowMessageBubble.add(UI.makeStyledTextPane(
+    JPanel optimalFlowMessage = new JPanel();
+    optimalFlowMessage.setBackground(Color.WHITE);
+    optimalFlowMessage.add(UI.makeStyledTextPane(
         "This flow is pretty close to optimal!"),
         BorderLayout.CENTER);
-    optimalFlowMessageBubble.add(new RoundedButton("Go to Level 3!") {
-      private static final long serialVersionUID = 1L;
-      @Override
-      public void click() {
-        nextLevel();
-      }
-    }, BorderLayout.SOUTH);
-    messageContainer.add(optimalFlowMessageBubble, CARD_OPTIMAL_FLOW);
+    messageContainer.add(optimalFlowMessage, CARD_OPTIMAL_FLOW);
     
-    MessageBubble lowFlowMessageBubble = new MessageBubble();
-    lowFlowMessageBubble.add(UI.makeStyledTextPane(
+    JPanel lowFlowMessage = new JPanel();
+    lowFlowMessage.setBackground(Color.WHITE);
+    lowFlowMessage.add(UI.makeStyledTextPane(
         "The flow is low!\n" +
         "Drag the slider to increase the traffic on the main road."),
         BorderLayout.CENTER);
-    messageContainer.add(lowFlowMessageBubble, CARD_LOW_FLOW);
+    messageContainer.add(lowFlowMessage, CARD_LOW_FLOW);
     
     //
     // the sim
@@ -135,7 +135,7 @@ public class URoadGamePanel extends URoadGameBase {
     simCanvas.pause();
       
     // run warmup in the background
-    final int flowIn = flowInSlider.getValue();
+    final double flowIn = flowInSlider.getValue();
     ArrayList<SimBase> sims = new ArrayList<SimBase>(1);
     sims.add(simCanvas.getSim());
     warmupPool = new BackgroundWarmupRunner(sims, WARMUP_SECONDS,
@@ -150,7 +150,7 @@ public class URoadGamePanel extends URoadGameBase {
     });
   }
   
-  private void showFlowMessage(int flowIn) {
+  private void showFlowMessage(double flowIn) {
     // note: this loop gives us the keys in ascending order
     int flowInKey = FLOW_IN_MIN;
     for (int key : breaks.keySet()) {
@@ -175,10 +175,6 @@ public class URoadGamePanel extends URoadGameBase {
     warmupPool.stop();
   }
   
-  public void nextLevel() {
-    
-  }
-  
   /** For testing */
   public static void main(String [] args) {
     JFrame f = new JFrame("ring test");
@@ -190,5 +186,15 @@ public class URoadGamePanel extends URoadGameBase {
     f.add(p);
     f.setVisible(true);
     p.start();
+  }
+
+  @Override
+  protected void onBackClicked() {
+    // nop
+  }
+
+  @Override
+  protected void onNextClicked() {
+    // nop
   } 
 }

@@ -2,15 +2,12 @@ package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Common structure for the games on the URoad.
@@ -47,7 +44,7 @@ public abstract class URoadGameBase extends JPanel {
    */
   protected final static String CARD_GAME = "game";
   
-  protected final JSlider flowInSlider;
+  protected final BigSlider flowInSlider;
 
   protected final JPanel messageContainer;
 
@@ -57,47 +54,57 @@ public abstract class URoadGameBase extends JPanel {
 
   protected final CardLayout gameCards;
   
-  public URoadGameBase() {
+  public URoadGameBase(String title, boolean next) {
     super(new BorderLayout());
     
-    JPanel controlPanel = new JPanel(new BorderLayout());
-    controlPanel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-    add(controlPanel, BorderLayout.WEST);
+    //
+    // title bar
+    //
+    GameChoicePanel titleBar = new GameChoicePanel(true, title, next) {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void onBackClicked() {
+        URoadGameBase.this.onBackClicked();
+      }
+
+      @Override
+      public void onNextClicked() {
+        URoadGameBase.this.onNextClicked();
+      }
+    };
+    add(titleBar, BorderLayout.NORTH);
     
     //
     // control panel
     //
+    JPanel controlPanel = new MessageBubble();
+    controlPanel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD),
+        controlPanel.getBorder()));
+    add(controlPanel, BorderLayout.WEST);
     
-    JLabel titleLabel = new JLabel("junction");
-    titleLabel.setHorizontalAlignment(JLabel.CENTER);
-    titleLabel.setFont(UI.TITLE_FONT.deriveFont(48f));
-    titleLabel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, 2*PAD, PAD));
-    controlPanel.add(titleLabel, BorderLayout.NORTH);
-    
-    JPanel flowPanel = new JPanel(new BorderLayout());
-    controlPanel.add(flowPanel, BorderLayout.CENTER);
-    
-    flowInSlider = new JSlider(FLOW_IN_MIN, FLOW_IN_MAX, FLOW_IN_INIT);
-    flowInSlider.setMajorTickSpacing((FLOW_IN_MAX - FLOW_IN_MIN)/10);
-    flowInSlider.setPaintTicks(true);
-    flowInSlider.putClientProperty("JComponent.sizeVariant", "large");
-    flowInSlider.addChangeListener(new ChangeListener() {
+    flowInSlider = new BigSlider(FLOW_IN_MIN, FLOW_IN_MAX, FLOW_IN_INIT) {
+      private static final long serialVersionUID = 1L;
       @Override
-      public void stateChanged(ChangeEvent e) {
+      public void onValueUpdated() {
         updateFlowIn();
       }
-    });
-    flowPanel.add(flowInSlider, BorderLayout.NORTH);
+    };
+    flowInSlider.setBackground(Color.WHITE);
+    controlPanel.add(flowInSlider, BorderLayout.NORTH);
     
     messageCards = new CardLayout();
     messageContainer = new JPanel(messageCards);
+    messageContainer.setBackground(Color.WHITE);
     messageContainer.setBorder(BorderFactory.createEmptyBorder(PAD, 0, 0, 0));
-    flowPanel.add(messageContainer, BorderLayout.CENTER);
+    controlPanel.add(messageContainer, BorderLayout.CENTER);
     
-    MessageBubble warmupMessageBubble = new MessageBubble();
-    warmupMessageBubble.add(UI.makeStyledTextPane(
+    JPanel warmupMessage = new JPanel();
+    warmupMessage.setBackground(Color.WHITE);
+    warmupMessage.add(UI.makeStyledTextPane(
         "Starting Simulation..."), BorderLayout.CENTER);
-    messageContainer.add(warmupMessageBubble, CARD_WARMUP);
+    messageContainer.add(warmupMessage, CARD_WARMUP);
     
     //
     // game panels
@@ -120,8 +127,13 @@ public abstract class URoadGameBase extends JPanel {
   }
   
   public void start() {
+    flowInSlider.setValue(FLOW_IN_INIT);
     updateFlowIn();
   }
+  
+  protected abstract void onBackClicked();
+  
+  protected abstract void onNextClicked();
   
   protected abstract void updateFlowIn();
 }

@@ -34,6 +34,8 @@ public class URoadSpeedGamePanel extends URoadGameBase {
   private BackgroundWarmupRunner warmupPool;
   
   public URoadSpeedGamePanel() {
+    super("speed limits", false);
+    
     //
     // in-game message 
     //
@@ -121,11 +123,7 @@ public class URoadSpeedGamePanel extends URoadGameBase {
   
   private void setSimParameters(URoadSim sim, int speedMph) {
     sim.qIn = flowInSlider.getValue() / 3600.;
-    double v0 = Utility.milesPerHourToMetersPerSecond(speedMph);
-    sim.getStreet().getVehicleFactory().getCarIDM().v0 = v0;
-    sim.getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
-    sim.getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
-    sim.getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
+    sim.setSpeedLimit(Utility.milesPerHourToMetersPerSecond(speedMph));
   }
 
   public void stop() {
@@ -148,4 +146,13 @@ public class URoadSpeedGamePanel extends URoadGameBase {
     p.start();
   } 
   
+  @Override
+  protected void onBackClicked() {
+    // nop
+  }
+
+  @Override
+  protected void onNextClicked() {
+    // nop
+  } 
 }

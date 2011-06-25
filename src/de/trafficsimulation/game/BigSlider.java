@@ -101,9 +101,10 @@ public class BigSlider extends JPanel {
   public BigSlider(double minValue, double maxValue, double value,
       double hintValue) {
     // set defaults
-    rampColor = getBackground().darker();
-    knobColor = getForeground().brighter();
-    hintColor = knobColor.brighter();
+    setBackground(Color.WHITE);
+    knobColor = UI.PURPLE;
+    rampColor = new Color(0xcccccc);
+    hintColor = UI.PURPLE.brighter();
     hintStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT,
         BasicStroke.JOIN_MITER, 10f, new float[] {3f}, 0f);
     

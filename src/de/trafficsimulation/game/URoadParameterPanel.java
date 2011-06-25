@@ -232,10 +232,9 @@ public abstract class URoadParameterPanel extends JPanel implements Constants {
   }
   
   protected void beginRound() {
-    // each sim uses the same value for qIn (in flow on main road)
     final double qIn = flowInSlider.getValue() / 3600.;
     final double qRamp = rampFlowSlider.getValue() / 3600.;
-    final double v0 = speedSlider.getValue();
+    final double v0 = speedSlider.getValue() / 3600. * 1000.; // km/h -> m/s
     
     // spin up background simulation threads
     startBackgroundSims(qIn, qRamp, v0);
@@ -245,10 +244,7 @@ public abstract class URoadParameterPanel extends JPanel implements Constants {
       canvas.start();
       canvas.getSim().qIn = qIn;
       canvas.getSim().qRamp = qRamp;
-      canvas.getSim().getStreet().getVehicleFactory().getCarIDM().v0 = v0;
-      canvas.getSim().getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
-      canvas.getSim().getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
-      canvas.getSim().getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
+      canvas.getSim().setSpeedLimit(v0);
     }
     
     // start the timer that polls the background sim results until all sims
@@ -281,10 +277,7 @@ public abstract class URoadParameterPanel extends JPanel implements Constants {
 
         sim.qIn = qIn;
         sim.qRamp = qRamp;
-        sim.getStreet().getVehicleFactory().getCarIDM().v0 = v0;
-        sim.getStreet().getVehicleFactory().getTruckIDM().v0 = v0;
-        sim.getOnRamp().getVehicleFactory().getCarIDM().v0 = v0;
-        sim.getOnRamp().getVehicleFactory().getTruckIDM().v0 = v0;
+        sim.setSpeedLimit(v0);
         
         return sim;
       }

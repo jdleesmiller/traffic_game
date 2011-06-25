@@ -12,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
@@ -24,7 +23,8 @@ public class MainFrame extends JFrame implements Constants {
 
   private static final String COVER_CARD = "cover";
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
-  private static final String FLOW_GAME_GAME_CARD = "flow_game";
+  private static final String FLOW_GAME_CARD = "flow_game";
+  private static final String SPEED_GAME_CARD = "speed_game";
 
   /**
    * Reload the intro panel if there has not been any activity after this
@@ -36,6 +36,7 @@ public class MainFrame extends JFrame implements Constants {
   private final CoverPanel coverPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
+  private final URoadSpeedGamePanel speedGamePanel;
 
   private final Timer inactivityTimer;
 
@@ -77,12 +78,34 @@ public class MainFrame extends JFrame implements Constants {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void nextLevel() {
-        JOptionPane.showMessageDialog(this, "Sorry! It's not done yet.");
+      protected void onBackClicked() {
         showRingRoadGame();
       }
+
+      @Override
+      protected void onNextClicked() {
+        showSpeedGame();
+      }
     };
-    add(flowGamePanel, FLOW_GAME_GAME_CARD);
+    add(flowGamePanel, FLOW_GAME_CARD);
+
+    //
+    // speed game card
+    //
+    speedGamePanel = new URoadSpeedGamePanel() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      protected void onBackClicked() {
+        showFlowGame();
+      }
+
+      @Override
+      protected void onNextClicked() {
+        showCover();
+      }
+    };
+    add(speedGamePanel, SPEED_GAME_CARD);
 
     //
     // inactivity sensing (return to intro panel if no mouse activity)
@@ -105,6 +128,7 @@ public class MainFrame extends JFrame implements Constants {
   private void stopAll() {
     ringRoadGamePanel.stop();
     flowGamePanel.stop();
+    speedGamePanel.stop();
     coverPanel.stop();
   }
   
@@ -122,8 +146,14 @@ public class MainFrame extends JFrame implements Constants {
 
   private void showFlowGame() {
     stopAll();
-    cardLayout.show(getContentPane(), FLOW_GAME_GAME_CARD);
+    cardLayout.show(getContentPane(), FLOW_GAME_CARD);
     flowGamePanel.start();
+  }
+
+  private void showSpeedGame() {
+    stopAll();
+    cardLayout.show(getContentPane(), SPEED_GAME_CARD);
+    speedGamePanel.start();
   }
 
   /**
@@ -145,8 +175,11 @@ public class MainFrame extends JFrame implements Constants {
         }
 
         MainFrame f = createOnMonitor(device);
+        
         // TODO f.showCover();
-        f.showRingRoadGame();
+        // for testing:
+        //f.showRingRoadGame();
+        f.showFlowGame();
       }
     });
   }

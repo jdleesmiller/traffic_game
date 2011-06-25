@@ -34,7 +34,7 @@ public interface Constants {
 
   static final double V0_MIN_KMH = 1;
   static final double V0_MAX_KMH = 200;
-  static final double V0_INIT_KMH = 120;
+  static final double V0_INIT_KMH = 112.65; // 70mph
 
   static final double S0_MIN_M = 0;
   static final double S0_MAX_M = 6;
