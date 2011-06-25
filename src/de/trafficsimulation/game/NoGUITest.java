@@ -51,8 +51,13 @@ public class NoGUITest implements Constants {
       
     for (int trial = 0; trial < numTrials; ++trial) {
       for (int point = 1; point <= numPoints; ++point) {
+        // note: we want to collect the cumulative average, which means that
+        // we have to disable the exponential moving average part, because it
+        // clears the flow counter that we want; we just set its averaging
+        // interval positive infinity.
         URoadSim sim = new URoadSim(random,
-            uRoadLengthMeters, rampLengthMeters);
+            uRoadLengthMeters, rampLengthMeters, Double.NaN,
+            Double.POSITIVE_INFINITY);
         sim.qIn = ((double)point) * MAX_Q_IN / 3600.0 / numPoints;
         sim.qRamp = rampFlow / 3600.0;
         sim.setSpeedLimit(Utility.milesPerHourToMetersPerSecond(speedLimit));
