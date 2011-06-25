@@ -1,12 +1,8 @@
 package de.trafficsimulation.game;
 
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Random;
-
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import de.trafficsimulation.road.ArcRoad;
 import de.trafficsimulation.road.RoadBase;

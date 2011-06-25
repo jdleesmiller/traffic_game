@@ -4,11 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import de.trafficsimulation.core.Constants;
 
@@ -22,6 +24,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   
   private final JPanel messageContainer;
   private final CardLayout messageLayout;
+  private final Timer messageTimer;
   
   private final static String LOW_DENSITY_CARD = "low";
   private final static String MEDIUM_DENSITY_CARD = "medium";
@@ -48,6 +51,25 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
    * vehicles/km.
    */
   private final static int MEDIUM_HIGH_DENSITY_INVKM = 70;
+
+  /**
+   * Update the adaptive messages at this interval, in milliseconds.
+   */
+  private static final int ADAPTIVE_MESSAGE_TIMER_DELAY_MS = 100;
+  
+  /**
+   * Display the 'phantom jam' message when the speed of the slowest vehicle
+   * is below this threshold.
+   */
+  private static final double MIN_SPEED_FOR_JAM = 5;
+  
+  /**
+   * Display the 'free flow' message when the speed of the slowest vehicle
+   * is below this threshold. There should be a reasonably large gap between 
+   * MIN_SPEED_FOR_JAM and MIN_SPEED_FOR_FREE, to avoid switching messages due
+   * to noise.
+   */
+  private static final double MIN_SPEED_FOR_FREE = 6;
   
   public RingRoadGamePanel() {
     setLayout(new BorderLayout());
@@ -128,12 +150,32 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     }, BorderLayout.SOUTH);
     messageContainer.add(highDensityMessage, HIGH_DENSITY_CARD);
     controlPanel.add(messageContainer, BorderLayout.SOUTH);
+    
+    messageTimer = new Timer(ADAPTIVE_MESSAGE_TIMER_DELAY_MS, new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        RingRoadSim sim = ringRoadCanvas.getSim();
+        if (sim == null)
+          return;
+        
+        double minSpeed = sim.getStreet().getMinSpeed();
+        
+        if (minSpeed < MIN_SPEED_FOR_JAM) {
+          
+        } else if (minSpeed > MIN_SPEED_FOR_FREE) {
+          
+        } else {
+          // leave the current message up
+        }
+      }
+    });
   }
 
   public void start() {
     ringRoadCanvas.start(42);
     densitySlider.setValue(LOW_DENSITY_INVKM);
     updateDensity();
+    messageTimer.start();
   }
 
   private void updateDensity() {
@@ -160,6 +202,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   
   public void stop() {
     ringRoadCanvas.stop();
+    messageTimer.stop();
   }
   
   /**

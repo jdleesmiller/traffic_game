@@ -37,7 +37,7 @@ public class GameChoicePanel extends JPanel {
           addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-              onNextClicked();
+              onBackClicked();
             }
           });
 
@@ -101,6 +101,8 @@ public class GameChoicePanel extends JPanel {
   }
 
   public void onNextClicked() {
-    System.out.println("next!");
+  }
+  
+  public void onBackClicked() {
   }
 }
