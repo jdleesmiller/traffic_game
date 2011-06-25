@@ -16,204 +16,48 @@ import de.trafficsimulation.core.Constants;
 
 public abstract class RingRoadGamePanel extends JPanel implements Constants {
 
-  private static final long serialVersionUID = 1L;
-
-  private final RingRoadCanvas ringRoadCanvas;
-  
-  private final BigSlider densitySlider;
-  
-  private final JPanel messageContainer;
-  private final CardLayout messageLayout;
-  private final Timer messageTimer;
-  
-  private final static String LOW_DENSITY_CARD = "low";
-  private final static String MEDIUM_DENSITY_CARD = "medium";
-  private final static String HIGH_DENSITY_CARD = "high";
-  
-  /**
-   * Location of the "low density" arrow, in vehicles/km.
-   */
-  private final static int LOW_DENSITY_INVKM = 20;
-  
-  /**
-   * Location of the "medium density" hint, in vehicles/km.
-   */
-  private final static int MEDIUM_DENSITY_INVKM = 60;
-  
-  /**
-   * Boundary between the low density and medium density messages, in
-   * vehicles/km.
-   */
-  private final static int LOW_MEDIUM_DENSITY_INVKM = 55;
-  
-  /**
-   * Boundary between the medium density and high density messages, in
-   * vehicles/km.
-   */
-  private final static int MEDIUM_HIGH_DENSITY_INVKM = 70;
-
   /**
    * Update the adaptive messages at this interval, in milliseconds.
    */
   private static final int ADAPTIVE_MESSAGE_TIMER_DELAY_MS = 100;
-  
-  /**
-   * Display the 'phantom jam' message when the speed of the slowest vehicle
-   * is below this threshold.
-   */
-  private static final double MIN_SPEED_FOR_JAM = 5;
-  
-  /**
-   * Display the 'free flow' message when the speed of the slowest vehicle
-   * is below this threshold. There should be a reasonably large gap between 
-   * MIN_SPEED_FOR_JAM and MIN_SPEED_FOR_FREE, to avoid switching messages due
-   * to noise.
-   */
-  private static final double MIN_SPEED_FOR_FREE = 6;
-  
-  public RingRoadGamePanel() {
-    setLayout(new BorderLayout());
-    
-    GameChoicePanel titleBar = new GameChoicePanel(true, "phantom jams", true);
-    add(titleBar, BorderLayout.NORTH);
-    
-    //
-    // float UI in the center of the ring road
-    //
-    ringRoadCanvas = new RingRoadCanvas();
-    ringRoadCanvas.setBorder(
-        BorderFactory.createEmptyBorder(UI.PAD, UI.PAD, UI.PAD, UI.PAD));
-    ringRoadCanvas.setLayout(new GridBagLayout());
-    add(ringRoadCanvas, BorderLayout.CENTER);
-    
-    //
-    // the bubble
-    //
-    JPanel controlPanel = new MessageBubble();
-    controlPanel.setLayout(new BorderLayout());
-    ringRoadCanvas.add(controlPanel);
-    
-    densitySlider = new BigSlider(DENS_MIN_INVKM, DENS_MAX_INVKM,
-        LOW_DENSITY_INVKM, MEDIUM_DENSITY_INVKM) {
-      private static final long serialVersionUID = 1L;
-      {
-        setBackground(Color.WHITE);
-        setKnobColor(UI.PURPLE);
-        setRampColor(new Color(0xcccccc));
-        setHintColor(UI.PURPLE.brighter());
-        setBorder(BorderFactory.createEmptyBorder(0, 0, UI.PAD, 0));
-      }
-      @Override
-      public void onValueUpdated() {
-        updateDensity();
-      }
-    };
-    controlPanel.add(densitySlider, BorderLayout.NORTH);
-    
-    //
-    // message panels
-    //
-    messageContainer = new JPanel();
-    messageLayout = new CardLayout();
-    messageContainer.setLayout(messageLayout);
-        
-    JPanel lowDensityMessage = new JPanel(new BorderLayout());
-    lowDensityMessage.add(UI.makeStyledTextPane(
-        "When there are not many cars, traffic flows freely.\n" +
-        "Try dragging the slider to add more cars..."), BorderLayout.CENTER);
-    messageContainer.add(lowDensityMessage, LOW_DENSITY_CARD);
-    
-    JPanel mediumDensityMessage = new JPanel(new BorderLayout());
-    mediumDensityMessage.add(UI.makeStyledTextPane(
-        "When the road gets busy, 'stop and go' waves form.\n" +
-        "These are phantom traffic jams.\n\n"), BorderLayout.CENTER);
-    mediumDensityMessage.add(new RoundedButton("Go to Level 2!") {
-      private static final long serialVersionUID = 1L;
-      @Override
-      public void click() {
-        goToNextLevel();
-      }
-    }, BorderLayout.SOUTH);
-    messageContainer.add(mediumDensityMessage, MEDIUM_DENSITY_CARD);
-    
-    JPanel highDensityMessage = new JPanel(new BorderLayout());
-    highDensityMessage.add(UI.makeStyledTextPane(
-        "When the amount of traffic gets too close to the road's capacity,\n" +
-        "nobody goes anywhere!\n\n" +
-        "Click the button to go to the next level..."), BorderLayout.CENTER);
-    highDensityMessage.add(new RoundedButton("Go to Level 2!") {
-      private static final long serialVersionUID = 1L;
-      @Override
-      public void click() {
-        goToNextLevel();
-      }
-    }, BorderLayout.SOUTH);
-    messageContainer.add(highDensityMessage, HIGH_DENSITY_CARD);
-    controlPanel.add(messageContainer, BorderLayout.SOUTH);
-    
-    messageTimer = new Timer(ADAPTIVE_MESSAGE_TIMER_DELAY_MS, new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        RingRoadSim sim = ringRoadCanvas.getSim();
-        if (sim == null)
-          return;
-        
-        double minSpeed = sim.getStreet().getMinSpeed();
-        
-        if (minSpeed < MIN_SPEED_FOR_JAM) {
-          
-        } else if (minSpeed > MIN_SPEED_FOR_FREE) {
-          
-        } else {
-          // leave the current message up
-        }
-      }
-    });
-  }
 
-  public void start() {
-    ringRoadCanvas.start(42);
-    densitySlider.setValue(LOW_DENSITY_INVKM);
-    updateDensity();
-    messageTimer.start();
-  }
+  private final static String FREE_FLOW_CARD = "free";
+  private final static String CONGESTION_CARD = "congestion";
+  private final static String JAM_CARD = "jam";
 
-  private void updateDensity() {
-    double density = densitySlider.getValue();
-    ringRoadCanvas.getSim().setDensity(density * 1e-3);
-    
-    //
-    // show the appropriate message, based on the slider value
-    //
-    if (density < LOW_MEDIUM_DENSITY_INVKM) {
-      // low density
-      densitySlider.setHintValue(MEDIUM_DENSITY_INVKM);
-      messageLayout.show(messageContainer, LOW_DENSITY_CARD);
-    } else if (density < MEDIUM_HIGH_DENSITY_INVKM) {
-      // medium density
-      densitySlider.setHintValue(Double.NaN);
-      messageLayout.show(messageContainer, MEDIUM_DENSITY_CARD);
-    } else {
-      // high density
-      densitySlider.setHintValue(Double.NaN);
-      messageLayout.show(messageContainer, HIGH_DENSITY_CARD);
-    }
-  }
-  
-  public void stop() {
-    ringRoadCanvas.stop();
-    messageTimer.stop();
-  }
-  
   /**
-   * Called when the user presses the back button.
+   * The density for the 'hint' to encourage the user to increase the density.
    */
-  public abstract void goToNextLevel();
-  
+  private final static int HINT_DENSITY_INVKM = 60;
+
+  /**
+   * The density of the road when the sim starts.
+   */
+  private final static int INITIAL_DENSITY_INVKM = 20;
+
+  /**
+   * The message cards to show, according to the MIN_SPEED_THRESHOLDS.
+   */
+  private static final String[] MIN_SPEED_CARDS = { JAM_CARD, CONGESTION_CARD,
+      FREE_FLOW_CARD };
+
+  /**
+   * Minimum speed thresholds used to set the adaptive messages; speeds are in
+   * meters per second.
+   */
+  private static final double[] MIN_SPEED_THRESHOLDS = { 2.0, 8.0 };
+  /**
+   * Don't change the current state unless the minimum speed is at least this
+   * much outside of the interval for the current state. This avoids rapid
+   * switching of messages due to noise.
+   */
+  private static final double MIN_SPEED_TOLERANCE = 1.0;
+  private static final long serialVersionUID = 1L;
+
   /** For testing */
-  public static void main(String [] args) {
+  public static void main(String[] args) {
     JFrame f = new JFrame("ring test");
-    f.setSize(800,600);
+    f.setSize(800, 600);
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     RingRoadGamePanel p = new RingRoadGamePanel() {
       private static final long serialVersionUID = 1L;
@@ -225,5 +69,143 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     f.add(p);
     f.setVisible(true);
     p.start();
+  }
+
+  private final BigSlider densitySlider;
+
+  private final JPanel messageContainer;
+
+  private final CardLayout messageLayout;
+
+  private final ThresholdMachine messageMachine;
+
+  private final Timer messageTimer;
+
+  private final RingRoadCanvas ringRoadCanvas;
+
+  public RingRoadGamePanel() {
+    setLayout(new BorderLayout());
+
+    GameChoicePanel titleBar = new GameChoicePanel(false, "phantom jams", true) {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void onNextClicked() {
+        goToNextLevel();
+      }
+    };
+    add(titleBar, BorderLayout.NORTH);
+
+    //
+    // float UI in the center of the ring road
+    //
+    ringRoadCanvas = new RingRoadCanvas();
+    ringRoadCanvas.setBorder(BorderFactory.createEmptyBorder(UI.PAD, UI.PAD,
+        UI.PAD, UI.PAD));
+    ringRoadCanvas.setLayout(new GridBagLayout());
+    add(ringRoadCanvas, BorderLayout.CENTER);
+
+    //
+    // the bubble
+    //
+    JPanel controlPanel = new MessageBubble();
+    controlPanel.setLayout(new BorderLayout());
+    ringRoadCanvas.add(controlPanel);
+
+    densitySlider = new BigSlider(DENS_MIN_INVKM, DENS_MAX_INVKM,
+        INITIAL_DENSITY_INVKM, HINT_DENSITY_INVKM) {
+      private static final long serialVersionUID = 1L;
+      {
+        setBackground(Color.WHITE);
+        setKnobColor(UI.PURPLE);
+        setRampColor(new Color(0xcccccc));
+        setHintColor(UI.PURPLE.brighter());
+        setBorder(BorderFactory.createEmptyBorder(0, 0, UI.PAD, 0));
+      }
+
+      @Override
+      public void onValueUpdated() {
+        updateDensity();
+      }
+    };
+    controlPanel.add(densitySlider, BorderLayout.NORTH);
+
+    //
+    // message panels
+    //
+    messageContainer = new JPanel();
+    controlPanel.add(messageContainer, BorderLayout.CENTER);
+    messageLayout = new CardLayout();
+    messageContainer.setLayout(messageLayout);
+
+    JPanel freeFlowMessage = new JPanel(new BorderLayout());
+    freeFlowMessage.add(UI
+        .makeStyledTextPane("Traffic Report: traffic is flowing freely.\n"
+            + "Try dragging the slider to the right to add more cars..."),
+        BorderLayout.CENTER);
+    messageContainer.add(freeFlowMessage, FREE_FLOW_CARD);
+
+    JPanel congestionMessage = new JPanel(new BorderLayout());
+    congestionMessage.add(UI.makeStyledTextPane("Traffic Report: congestion!\n"
+        + "Try dragging the slider to the right to add even more cars..."),
+        BorderLayout.CENTER);
+    messageContainer.add(congestionMessage, CONGESTION_CARD);
+
+    JPanel jamMessage = new JPanel(new BorderLayout());
+    jamMessage.add(UI.makeStyledTextPane("Traffic Report: phantom jams!"),
+        BorderLayout.CENTER);
+    messageContainer.add(jamMessage, JAM_CARD);
+
+    messageMachine = new ThresholdMachine(MIN_SPEED_THRESHOLDS,
+        MIN_SPEED_CARDS, MIN_SPEED_TOLERANCE);
+
+    messageTimer = new Timer(ADAPTIVE_MESSAGE_TIMER_DELAY_MS,
+        new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            updateMessage();
+          }
+        });
+  }
+
+  /**
+   * Called when the user presses the next button.
+   */
+  public abstract void goToNextLevel();
+
+  public void start() {
+    ringRoadCanvas.start(42);
+    densitySlider.setValue(INITIAL_DENSITY_INVKM);
+    updateDensity();
+    messageTimer.start();
+    updateMessage();
+  }
+
+  public void stop() {
+    ringRoadCanvas.stop();
+    messageTimer.stop();
+  }
+
+  private void updateDensity() {
+    double density = densitySlider.getValue();
+    ringRoadCanvas.getSim().setDensity(density * 1e-3);
+  }
+
+  private void updateMessage() {
+    RingRoadSim sim = ringRoadCanvas.getSim();
+    if (sim == null)
+      return;
+
+    double minSpeed = sim.getStreet().getMinSpeed();
+    if (messageMachine.observe(minSpeed)) {
+      messageLayout.show(messageContainer, messageMachine.getState());
+
+      // only show the hint at low density
+      if (messageMachine.getState().equals(FREE_FLOW_CARD)) {
+        densitySlider.setHintValue(HINT_DENSITY_INVKM);
+      } else {
+        densitySlider.setHintValue(Double.NaN);
+      }
+    }
   }
 }
