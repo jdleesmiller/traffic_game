@@ -15,7 +15,7 @@ public abstract class IDM implements MicroModel {
   /**
    * In meters per second.
    */
-  public double v0;
+  private double v0;
   public double delta;
   public double a;
   public double b;
@@ -55,7 +55,7 @@ public abstract class IDM implements MicroModel {
   }
 
   public void set_params(IDM idm) {
-    this.set_v0(idm.v0);
+    this.set_v0(idm.get_v0());
     this.set_a(idm.a);
     this.set_b(idm.b);
     this.set_T(idm.T);
@@ -122,6 +122,10 @@ public abstract class IDM implements MicroModel {
       acc = -Constants.MAX_BRAKING;
     }
     return acc;
+  }
+
+  public double get_v0() {
+    return v0;
   }
 
 }

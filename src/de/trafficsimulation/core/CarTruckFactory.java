@@ -15,7 +15,7 @@ public class CarTruckFactory implements Constants {
 
   private IDM carIDM = new IDM() {
     {
-      v0 = V0_INIT_KMH / 3.6;
+      set_v0(V0_INIT_KMH / 3.6);
       delta = 4.0;
       a = A_INIT_CAR_MSII; // 1
       b = B_INIT_MSII; // 1.0
@@ -28,7 +28,7 @@ public class CarTruckFactory implements Constants {
 
   private IDM truckIDM = new IDM() {
     {
-      v0 = 22.2;
+      set_v0(22.2);
       delta = 4.0;
       a = A_INIT_TRUCK_MSII;
       b = 4.0;

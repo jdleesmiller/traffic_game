@@ -135,7 +135,7 @@ public class URoadSim extends SimBase {
    * @return positive; in meters per second
    */
   public double getSpeedLimit() {
-    return getStreet().getVehicleFactory().getCarIDM().v0;
+    return getStreet().getVehicleFactory().getCarIDM().get_v0();
   }
 
   /**
@@ -146,9 +146,16 @@ public class URoadSim extends SimBase {
    *          in meters per second
    */
   public void setSpeedLimit(double speedLimit) {
-    getStreet().getVehicleFactory().getCarIDM().v0 = speedLimit;
-    getStreet().getVehicleFactory().getTruckIDM().v0 = speedLimit;
-    getOnRamp().getVehicleFactory().getCarIDM().v0 = speedLimit;
-    getOnRamp().getVehicleFactory().getTruckIDM().v0 = speedLimit;
+    double truckSpeedLimit = Math.min(speedLimit, VMAX_TRUCK_KMH / 3.6);
+       
+    getStreet().getVehicleFactory().getCarIDM().set_v0(speedLimit);
+    getStreet().getVehicleFactory().getCarIDM().initialize();
+    getStreet().getVehicleFactory().getTruckIDM().set_v0(truckSpeedLimit);
+    getStreet().getVehicleFactory().getTruckIDM().initialize();
+    
+    getOnRamp().getVehicleFactory().getCarIDM().set_v0(speedLimit);
+    getOnRamp().getVehicleFactory().getCarIDM().initialize();
+    getOnRamp().getVehicleFactory().getTruckIDM().set_v0(truckSpeedLimit);
+    getOnRamp().getVehicleFactory().getTruckIDM().initialize();
   }
 }

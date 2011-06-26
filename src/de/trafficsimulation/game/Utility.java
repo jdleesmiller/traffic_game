@@ -147,10 +147,10 @@ public class Utility {
   }
   
   public static double metersPerSecondToMilesPerHour(double metersPerSecond) {
-    return metersPerSecond * 3600.0 / 1000.0 / 1.6; 
+    return metersPerSecond * 3600.0 / 1000.0 / 1.609344; 
   }
   
   public static double milesPerHourToMetersPerSecond(double milesPerHour) {
-    return milesPerHour / 3600.0 * 1000.0 * 1.6; 
+    return milesPerHour / 3600.0 * 1000.0 * 1.609344;
   }
 }
