@@ -198,8 +198,11 @@ public class URoadCanvas extends SimCanvas {
   protected void paintAnnotations(Graphics2D g2) {
     if (sim == null)
       return;
-    g2.drawString(String.format("min speed: %.1fm/s", sim.getStreet()
-        .getMinSpeedInLane(0)), 30, 50);
+    double minSpeed;
+    synchronized(sim) {
+      minSpeed = sim.getStreet().getMinSpeedInLane(0);
+    }
+    g2.drawString(String.format("min speed: %.1fm/s", minSpeed), 30, 50);
 
     Rectangle2D uBounds = getURoad().getBoundsMeters();
     g2.setFont(UI.BODY_FONT);
