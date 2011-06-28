@@ -176,6 +176,7 @@ public class MainFrame extends JFrame implements Constants {
         }
 
         MainFrame f = createOnMonitor(device);
+        f.setAlwaysOnTop(true);
         f.showCover();
       }
     });
