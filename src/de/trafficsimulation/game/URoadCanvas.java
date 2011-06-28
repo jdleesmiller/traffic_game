@@ -136,7 +136,7 @@ public class URoadCanvas extends SimCanvas {
    * @return
    */
   private String getFlowString(double flow) {
-    return String.format("%.0f cars/hour", flow * 3600);
+    return String.format(" %.0f cars/hour ", flow * 3600);
   }
 
   private static final double ARROW_PAD = 4;
@@ -211,27 +211,42 @@ public class URoadCanvas extends SimCanvas {
 
     AffineTransform tx = g2.getTransform();
 
-    // flow in arrow (top right)
+    // main road flow in arrow (top right)
     Point2D.Double ptIn = new Point2D.Double(uBounds.getMaxX(),
-        uBounds.getMinY());
+        uBounds.getMinY() + 2*LANEWIDTH_M);
     metersToPixels.transform(ptIn, ptIn);
     Arrow leftArrow = new Arrow(textRect, true);
     ptIn.x -= leftArrow.wBody;
-    ptIn.y -= leftArrow.yBot + ARROW_PAD;
+    ptIn.y -= leftArrow.yTop - ARROW_PAD;
     g2.translate(ptIn.x, ptIn.y);
     g2.setColor(UI.PURPLE_HIGHLIGHT);
     g2.fill(leftArrow.path);
     g2.setColor(Color.BLACK);
     g2.drawString(getFlowString(sim.qIn), 0f, 0f);
     g2.setTransform(tx);
+    
+    // on ramp flow in arrow (bottom left)
+    Point2D.Double ptRamp = new Point2D.Double(uBounds.getMinX(),
+        uBounds.getMaxY() + LANEWIDTH_M);
+    String qRampString = getFlowString(sim.qRamp);
+    Rectangle2D qRampRect = g2.getFontMetrics().getStringBounds(qRampString, g2);
+    Arrow rightArrow = new Arrow(textRect, false);
+    metersToPixels.transform(ptRamp, ptRamp);
+    ptRamp.y -= rightArrow.yTop - ARROW_PAD;
+    g2.translate(ptRamp.x, ptRamp.y);
+    g2.setColor(UI.PURPLE_HIGHLIGHT);
+    g2.fill(rightArrow.path);
+    g2.translate(textRect.getWidth() - qRampRect.getWidth(), 0);
+    g2.setColor(Color.BLACK);
+    g2.drawString(qRampString, 0f, 0f);
+    g2.setTransform(tx);
 
     // flow out arrow (bottom right)
     Point2D.Double ptOut = new Point2D.Double(uBounds.getMaxX(),
         uBounds.getMaxY() - 2*LANEWIDTH_M);
-    metersToPixels.transform(ptOut, ptOut);
     String qOutString = getFlowString(sim.getMeanFlowOut());
     Rectangle2D qOutRect = g2.getFontMetrics().getStringBounds(qOutString, g2);
-    Arrow rightArrow = new Arrow(textRect, false);
+    metersToPixels.transform(ptOut, ptOut);
     ptOut.x -= rightArrow.wBody + rightArrow.wHead;
     ptOut.y -= rightArrow.yBot + ARROW_PAD;
     g2.translate(ptOut.x, ptOut.y);
