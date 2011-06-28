@@ -44,9 +44,10 @@ public class UI {
   public static final Color PURPLE = new Color(0x500a91);
   
   /**
-   * A lighter shade of the main background color.
+   * Brighter triad complement to the background.
    */
-  //public static final Color FEATURE = new Color();
+  public static final Color PURPLE_HIGHLIGHT =
+    new Color(0x500a91).brighter().brighter();
   
   private static String getResourceName(String fileName) {
     return "/de/trafficsimulation/game/res/" + fileName;

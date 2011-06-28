@@ -2,8 +2,6 @@ package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -12,16 +10,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
 public class URoadGamePanel extends URoadGameBase {
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Update the sim flow out meter this often.
-   */
-  private static final int SCORE_TIMER_DELAY_MS = 100;
-  
   private final static String CARD_HIGH_FLOW = "high";
   
   private final static String CARD_MEDIUM_FLOW = "medium";
@@ -32,7 +24,6 @@ public class URoadGamePanel extends URoadGameBase {
   
   private final URoadCanvas simCanvas;
 
-  private final Timer scoreTimer; 
   
   private BackgroundWarmupRunner warmupPool;
   
@@ -51,7 +42,7 @@ public class URoadGamePanel extends URoadGameBase {
   };
   
   public URoadGamePanel() {
-    super("flow breakdown", true);
+    super("flow breakdown", false);
     JPanel highFlowMessage = new JPanel();
     highFlowMessage.setBackground(Color.WHITE);
     highFlowMessage.add(UI.makeStyledTextPane(
@@ -103,21 +94,6 @@ public class URoadGamePanel extends URoadGameBase {
     // so we create an empty one to start with
     //
     warmupPool = new BackgroundWarmupRunner();
-    
-    //
-    // periodically update the score
-    //
-    scoreTimer = new Timer(SCORE_TIMER_DELAY_MS, new ActionListener() {      
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        JLabel label = (JLabel) simCanvas.getFloatPanel().getComponent(0);
-        URoadSim sim = simCanvas.getSim();
-        if (sim != null) {
-          label.setText(String.format("%.0f cars / hour out",
-              simCanvas.getSim().getMeanFlowOut() * 3600));
-        }
-      }
-    });
   }
   
   @Override
@@ -145,7 +121,6 @@ public class URoadGamePanel extends URoadGameBase {
         gameCards.show(gameContainer, CARD_GAME);
         showFlowMessage(flowIn);
         simCanvas.resume();
-        scoreTimer.start();
       }
     });
   }
@@ -170,7 +145,6 @@ public class URoadGamePanel extends URoadGameBase {
   }
   
   public void stop() {
-    scoreTimer.stop();
     simCanvas.stop();
     warmupPool.stop();
   }

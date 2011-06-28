@@ -24,7 +24,7 @@ public class MainFrame extends JFrame implements Constants {
   private static final String COVER_CARD = "cover";
   private static final String RING_ROAD_GAME_CARD = "ring_road_game";
   private static final String FLOW_GAME_CARD = "flow_game";
-  private static final String SPEED_GAME_CARD = "speed_game";
+//  private static final String SPEED_GAME_CARD = "speed_game";
 
   /**
    * Reload the intro panel if there has not been any activity after this
@@ -36,7 +36,7 @@ public class MainFrame extends JFrame implements Constants {
   private final CoverPanel coverPanel;
   private final RingRoadGamePanel ringRoadGamePanel;
   private final URoadGamePanel flowGamePanel;
-  private final URoadSpeedGamePanel speedGamePanel;
+//  private final URoadSpeedGamePanel speedGamePanel;
 
   private final Timer inactivityTimer;
 
@@ -84,28 +84,29 @@ public class MainFrame extends JFrame implements Constants {
 
       @Override
       protected void onNextClicked() {
-        showSpeedGame();
+        showCover();
+        //showSpeedGame(); DISABLED
       }
     };
     add(flowGamePanel, FLOW_GAME_CARD);
 
-    //
-    // speed game card
-    //
-    speedGamePanel = new URoadSpeedGamePanel() {
-      private static final long serialVersionUID = 1L;
-
-      @Override
-      protected void onBackClicked() {
-        showFlowGame();
-      }
-
-      @Override
-      protected void onNextClicked() {
-        showCover();
-      }
-    };
-    add(speedGamePanel, SPEED_GAME_CARD);
+//    //
+//    // speed game card
+//    //
+//    speedGamePanel = new URoadSpeedGamePanel() {
+//      private static final long serialVersionUID = 1L;
+//
+//      @Override
+//      protected void onBackClicked() {
+//        showFlowGame();
+//      }
+//
+//      @Override
+//      protected void onNextClicked() {
+//        showCover();
+//      }
+//    };
+//    add(speedGamePanel, SPEED_GAME_CARD);
 
     //
     // inactivity sensing (return to intro panel if no mouse activity)
@@ -128,7 +129,7 @@ public class MainFrame extends JFrame implements Constants {
   private void stopAll() {
     ringRoadGamePanel.stop();
     flowGamePanel.stop();
-    speedGamePanel.stop();
+//    speedGamePanel.stop();
     coverPanel.stop();
   }
   
@@ -150,11 +151,11 @@ public class MainFrame extends JFrame implements Constants {
     flowGamePanel.start();
   }
 
-  private void showSpeedGame() {
-    stopAll();
-    cardLayout.show(getContentPane(), SPEED_GAME_CARD);
-    speedGamePanel.start();
-  }
+//  private void showSpeedGame() { DISABLED
+//    stopAll();
+//    cardLayout.show(getContentPane(), SPEED_GAME_CARD);
+//    speedGamePanel.start();
+//  }
 
   /**
    * Application entry point.
@@ -175,20 +176,15 @@ public class MainFrame extends JFrame implements Constants {
         }
 
         MainFrame f = createOnMonitor(device);
-        
-        // TODO f.showCover();
-        // for testing:
-        //f.showRingRoadGame();
-        f.showFlowGame();
+        f.showCover();
       }
     });
   }
 
-  // TODO see
+  /*
+  // see
   // http://www.jasperpotts.com/blog/2008/08/skinning-a-slider-with-nimbus/
   // http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/color.html
-
-  /*
   private static void setLookAndFeel() {
     // try to find the fancy Nimbus look and feel
     String nimbusClassName = null;

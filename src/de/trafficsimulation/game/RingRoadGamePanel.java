@@ -138,19 +138,26 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
 
     JPanel freeFlowMessage = new JPanel(new BorderLayout());
     freeFlowMessage.add(UI
-        .makeStyledTextPane("Traffic Report: traffic is flowing freely.\n"
+        .makeStyledTextPane("Traffic Report: free flow.\n"
+            + "There are very few cars on the road, and everyone can drive\n"
+            + "at their own speed.\n"
             + "Try dragging the slider to the right to add more cars..."),
         BorderLayout.CENTER);
     messageContainer.add(freeFlowMessage, FREE_FLOW_CARD);
 
     JPanel congestionMessage = new JPanel(new BorderLayout());
-    congestionMessage.add(UI.makeStyledTextPane("Traffic Report: congestion!\n"
+    congestionMessage.add(UI.makeStyledTextPane("Traffic Report: congestion.\n"
+        + "The road is busy, and the drivers need to slow down for safety.\n"
+        + "This flow is unstable.\n"
         + "Try dragging the slider to the right to add even more cars..."),
         BorderLayout.CENTER);
     messageContainer.add(congestionMessage, CONGESTION_CARD);
 
     JPanel jamMessage = new JPanel(new BorderLayout());
-    jamMessage.add(UI.makeStyledTextPane("Traffic Report: phantom jams!"),
+    jamMessage.add(UI.makeStyledTextPane("Traffic Report: phantom jams.\n"
+        + "The road is busy, and the drivers need to slow down for safety.\n"
+        + "Instability causes stop-start driving.\n"
+        + "The phantom jams move backwards while the cars move forwards."),
         BorderLayout.CENTER);
     messageContainer.add(jamMessage, JAM_CARD);
 

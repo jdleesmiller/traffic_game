@@ -540,6 +540,21 @@ public class MicroStreet implements Constants {
   }
   
   /**
+   * The lowest speed of any car in the given lane.
+   * 
+   * @return in meters per second; infinity if there are no cars in lane
+   */
+  public double getMinSpeedInLane(int lane) {
+    double min = Double.POSITIVE_INFINITY;
+    for (Moveable car : street) {
+      if (car.velocity() < min && car.lane() == lane) {
+        min = car.velocity();
+      }
+    }
+    return min;
+  }
+  
+  /**
    * The lowest speed of any car on the street.
    * 
    * @return in meters per second

@@ -46,13 +46,13 @@ public class RingRoadCanvas extends SimCanvas {
     sim.tick();
   }
   
-  @Override
-  protected void paintAnnotations(Graphics2D g2) {
-    if (sim == null)
-      return;
-    g2.drawString(String.format("min speed: %.1fm/s",
-        sim.getStreet().getMinSpeed()), 10, 50);
-  }
+//  @Override
+//  protected void paintAnnotations(Graphics2D g2) {
+//    if (sim == null)
+//      return;
+//    g2.drawString(String.format("min speed: %.1fm/s",
+//        sim.getStreet().getMinSpeed()), 10, 50);
+//  }
 
   @Override
   protected void paintVehicles(Graphics2D g2) {
