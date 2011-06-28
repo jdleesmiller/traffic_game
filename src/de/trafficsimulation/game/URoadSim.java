@@ -16,12 +16,12 @@ public class URoadSim extends SimBase {
   /**
    * Smoothing factor for the mean flow out exponential moving average.
    */
-  private static final double DEFAULT_FLOW_OUT_SMOOTHING_FACTOR = 0.01;
+  private static final double DEFAULT_FLOW_OUT_SMOOTHING_FACTOR = 0.02;
 
   /**
    * Measure flow for meanFlowOut at this interval, in seconds.
    */
-  private static final double DEFAULT_FLOW_OUT_INTERVAL = 15;
+  private static final double DEFAULT_FLOW_OUT_INTERVAL = 30;
 
   private final MicroStreet street;
   private final OnRamp onRamp;

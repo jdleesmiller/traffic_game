@@ -205,7 +205,7 @@ public class URoadCanvas extends SimCanvas {
     g2.drawString(String.format("min speed: %.1fm/s", minSpeed), 30, 50);
 
     Rectangle2D uBounds = getURoad().getBoundsMeters();
-    g2.setFont(UI.BODY_FONT);
+    g2.setFont(UI.BODY_FONT.deriveFont(24f));
     String template = getFlowString(99999.0 / 3600.0);
     Rectangle2D textRect = g2.getFontMetrics().getStringBounds(template, g2);
 
