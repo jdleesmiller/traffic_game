@@ -126,6 +126,13 @@ public class URoadSim extends SimBase {
   public double getMeanFlowOut() {
     return meanFlowOut.getEstimate();
   }
+  
+  /**
+   * @return in meters per second; infinity if there are no such cars
+   */
+  public synchronized double getMinSpeedInInsideLane() {
+    return getStreet().getMinSpeedInLane(0);
+  }
 
   /**
    * Current speed limit. The speed limits are actually set separately for every
