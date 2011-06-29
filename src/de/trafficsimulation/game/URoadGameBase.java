@@ -31,8 +31,7 @@ public abstract class URoadGameBase extends JPanel {
   /**
    * Time steps per frame drawn for the visible sims. A large number here makes
    * them run very fast.
-   */
-  protected final static int TIME_STEPS_PER_FRAME = 10;
+   */ protected final static int TIME_STEPS_PER_FRAME = 1;
   
   /**
    * The name of the card to show when the simulator is starting a new run. 

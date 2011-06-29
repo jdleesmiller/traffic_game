@@ -46,6 +46,8 @@ public class URoadGamePanel extends URoadGameBase {
   private final static String FREE_HIGH_CARD = "high";
 
   private final static String CONGESTION_CARD = "congestion";
+  
+  private static final int TARGET_FPS = 100;
 
   /**
    * Update the adaptive messages at this interval, in milliseconds.
@@ -151,7 +153,7 @@ public class URoadGamePanel extends URoadGameBase {
     //
     // the sim
     //
-    simCanvas = new URoadCanvas();
+    simCanvas = new URoadCanvas(TARGET_FPS);
     simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
         .createEmptyBorder(PAD, PAD, PAD, PAD),
         new RoundedBorder(UI.BACKGROUND.brighter(), null,

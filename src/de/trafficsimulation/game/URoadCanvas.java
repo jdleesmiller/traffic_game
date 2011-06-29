@@ -33,15 +33,20 @@ public class URoadCanvas extends SimCanvas {
   private final Line2D.Double onRampEndLine;
   private final Line2D.Double onRampLine;
   // private final Ellipse2D.Double speedLimitCircle;
+  
   /**
    * Arrow at the origin with the tip at x = 0 and y = -1, pointing up.
    */
   private final GeneralPath arrow;
 
   private final JPanel floatPanel;
-
+  
   public URoadCanvas() {
-    super(makeRoads());
+    this(SimCanvas.DEFAULT_TARGET_FPS);
+  }
+
+  public URoadCanvas(int targetFPS) {
+    super(makeRoads(), targetFPS);
 
     Rectangle2D rampBounds = getOnRampRoad().getBoundsMeters();
 
@@ -198,8 +203,11 @@ public class URoadCanvas extends SimCanvas {
   protected void paintAnnotations(Graphics2D g2) {
     if (sim == null)
       return;
+    
+    // debugging messages
     double minSpeed = sim.getMinSpeedInInsideLane();
-    g2.drawString(String.format("min speed: %.1fm/s", minSpeed), 30, 50);
+    g2.drawString(String.format("min speed: %.1fm/s; t=%.1fmin", minSpeed,
+        sim.getTime()/60), 30, 50);
 
     Rectangle2D uBounds = getURoad().getBoundsMeters();
     g2.setFont(UI.BODY_FONT.deriveFont(24f));
