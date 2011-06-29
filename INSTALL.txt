@@ -9,6 +9,14 @@ Allow password-less log-on
   - Control Panel > Administrative Tools > Local Security Policy
   - Local Policies > Security Options
   - Accounts: Limit local account use of blank passwords... -> Disabled
+
+Set PATH to point to JRE
+  - WinKey + Break > Advanced System Settings > Advanced > Environmental Variables
+  - Create a new User Variable called PATH with value
+%PATH%;C:\Program Files\Java\jre6\bin;C:\Program Files\Java\jdk1.6.0_26\bin
+  - Note: Both the 32-bit and 64-bit JDKs + bundled JREs seem use these paths,
+    but they may not be the same, depending on how Java was installed (and
+    updates etc.)
   
 -- WINXP PREP
 
@@ -53,12 +61,6 @@ Tell it not to hide file extensions.
   - this is annoying for development
   - Control Panel > Folder Options > View > Hide file extensions for known types (uncheck)
 
-Set PATH to point to JRE
-  - WinKey + Break > Advanced System Settings > Advanced > Environmental Variables
-  - Create a new User Variable called PATH with value
-%PATH%;C:\Program Files\Java\jre6\bin;C:\Program Files\Java\jdk1.6.0_26\bin
-  - Note: The 64-bit JDK + bundled JRE seems to put the files in these paths;
-    the paths may not be the same, depending on how Java was installed (and updates etc.)
 
 Software to install:
   - Microsoft Security Essentials
