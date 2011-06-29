@@ -2,6 +2,8 @@ package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,7 +46,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
    * Minimum speed thresholds used to set the adaptive messages; speeds are in
    * meters per second.
    */
-  private static final double[] MIN_SPEED_THRESHOLDS = { 2.0, 8.0 };
+  private static final double[] MIN_SPEED_THRESHOLDS = { 2.0, 12.0 };
   /**
    * Don't change the current state unless the minimum speed is at least this
    * much outside of the interval for the current state. This avoids rapid
@@ -82,9 +84,11 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
 
   private final RingRoadCanvas ringRoadCanvas;
 
+  private final MessageBubble controlPanel;
+
   public RingRoadGamePanel() {
     setLayout(new BorderLayout());
-    
+
     //
     // title bar
     //
@@ -107,18 +111,17 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     ringRoadCanvas.setLayout(new GridBagLayout());
     add(ringRoadCanvas, BorderLayout.CENTER);
 
-    //
-    // the bubble
-    //
-    JPanel controlPanel = new MessageBubble();
+    controlPanel = new MessageBubble();
     controlPanel.setLayout(new BorderLayout());
     ringRoadCanvas.add(controlPanel);
 
     densitySlider = new BigSlider(DENS_MIN_INVKM, DENS_MAX_INVKM,
         INITIAL_DENSITY_INVKM, HINT_DENSITY_INVKM) {
       private static final long serialVersionUID = 1L;
+
       {
-        setBorder(BorderFactory.createEmptyBorder(0, 0, UI.PAD, 0));
+        setPreferredSize(new Dimension(1, 90));
+        setBorder(BorderFactory.createEmptyBorder(UI.PAD, 0, 2 * UI.PAD, 0));
       }
 
       @Override
@@ -132,32 +135,42 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     // message panels
     //
     messageContainer = new JPanel();
+    messageContainer.setBackground(Color.WHITE);
     controlPanel.add(messageContainer, BorderLayout.CENTER);
     messageLayout = new CardLayout();
     messageContainer.setLayout(messageLayout);
 
     JPanel freeFlowMessage = new JPanel(new BorderLayout());
-    freeFlowMessage.add(UI
-        .makeStyledTextPane("Traffic Report: free flow.\n"
-            + "There are very few cars on the road, and everyone can drive\n"
-            + "at their own speed.\n"
-            + "Try dragging the slider to the right to add more cars..."),
+    freeFlowMessage.add(UI.makeTrafficReportLabel("Free Flow", UI.GREEN),
+        BorderLayout.NORTH);
+    freeFlowMessage.add(UI.makeStyledTextPane(
+        "There are very few cars on the road, and everyone can\n"
+            + "drive at their own speed.\n", "regular", "\n", "small",
+        "Try moving the slider to the right to add more cars..."),
         BorderLayout.CENTER);
     messageContainer.add(freeFlowMessage, FREE_FLOW_CARD);
 
     JPanel congestionMessage = new JPanel(new BorderLayout());
-    congestionMessage.add(UI.makeStyledTextPane("Traffic Report: congestion.\n"
-        + "The road is busy, and the drivers need to slow down for safety.\n"
-        + "This flow is unstable.\n"
-        + "Try dragging the slider to the right to add even more cars..."),
-        BorderLayout.CENTER);
+    congestionMessage.add(UI.makeTrafficReportLabel("Congestion", UI.AMBER),
+        BorderLayout.NORTH);
+    congestionMessage
+        .add(
+            UI.makeStyledTextPane(
+                "The road is busy, and the drivers need to slow down for\nsafety.\n",
+                "regular", "\n", "small", "This flow is unstable.\n",
+                "regular", "\n", "small",
+                "Try moving the slider to the right to add even more cars..."),
+            BorderLayout.CENTER);
     messageContainer.add(congestionMessage, CONGESTION_CARD);
 
     JPanel jamMessage = new JPanel(new BorderLayout());
-    jamMessage.add(UI.makeStyledTextPane("Traffic Report: phantom jams.\n"
-        + "The road is busy, and the drivers need to slow down for safety.\n"
-        + "Instability causes stop-start driving.\n"
-        + "The phantom jams move backwards while the cars move forwards."),
+    jamMessage.add(UI.makeTrafficReportLabel("Phantom Jams", UI.RED),
+        BorderLayout.NORTH);
+    jamMessage.add(UI.makeStyledTextPane(
+        "The road is busy, and the drivers need to slow down for\nsafety.\n",
+        "regular", "\n", "small", "Instability causes stop-start driving.\n",
+        "regular", "\n", "small",
+        "The phantom jams move backwards while the cars\nmove forwards."),
         BorderLayout.CENTER);
     messageContainer.add(jamMessage, JAM_CARD);
 
@@ -201,16 +214,37 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     if (sim == null)
       return;
 
-    double minSpeed = sim.getStreet().getMinSpeed();
-    if (messageMachine.observe(minSpeed)) {
-      messageLayout.show(messageContainer, messageMachine.getState());
-
-      // hide the hint when jams form
-      if (messageMachine.getState().equals(JAM_CARD)) {
-        densitySlider.setHintValue(Double.NaN);
+    // detect new state; we give it a couple of simulated seconds to get
+    // started, because otherwise get a flash of congestion initially
+    String newState;
+    if (sim.getTime() > 5) {
+      double minSpeed = sim.getStreet().getMinSpeed();
+      if (!messageMachine.observe(minSpeed)) {
+        return;
       } else {
-        densitySlider.setHintValue(HINT_DENSITY_INVKM);
+        newState = messageMachine.getState();
       }
+    } else {
+      newState = FREE_FLOW_CARD;
+    }
+
+    // show message
+    messageLayout.show(messageContainer, newState);
+
+    // set border color to match the traffic report
+    if (newState.equals(FREE_FLOW_CARD)) {
+      controlPanel.getRoundedBorder().setBorderColor(UI.GREEN);
+    } else if (newState.equals(CONGESTION_CARD)) {
+      controlPanel.getRoundedBorder().setBorderColor(UI.AMBER);
+    } else {
+      controlPanel.getRoundedBorder().setBorderColor(UI.RED);
+    }
+
+    // hide the hint when jams form
+    if (newState.equals(JAM_CARD)) {
+      densitySlider.setHintValue(Double.NaN);
+    } else {
+      densitySlider.setHintValue(HINT_DENSITY_INVKM);
     }
   }
 }

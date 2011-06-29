@@ -61,16 +61,19 @@ Tell it not to hide file extensions.
   - this is annoying for development
   - Control Panel > Folder Options > View > Hide file extensions for known types (uncheck)
 
-
 Software to install:
   - Microsoft Security Essentials
   - Java Development Kit (JDK)
   - MSYSGIT http://help.github.com/win-set-up-git/
-  - Eclipse (64-bit)
+  - Eclipse (32-bit or 64-bit)
     - Help > Install New Software
     - Work with: Helios
-    - Collaboration > Eclipse EGit
+    - Collaboration > Eclipse EGit (optional)
 
+Things for Recovery Stick:
+  - 32-bit JRE
+  - the game JAR
+    
 -- GREEN-LO (green game + top TV)
 
 Must have the touch screen set to be the main display.

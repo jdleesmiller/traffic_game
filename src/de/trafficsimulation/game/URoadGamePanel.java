@@ -1,7 +1,6 @@
 package de.trafficsimulation.game;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,7 +45,7 @@ public class URoadGamePanel extends URoadGameBase {
   private final static String FREE_HIGH_CARD = "high";
 
   private final static String CONGESTION_CARD = "congestion";
-  
+
   private static final int TARGET_FPS = 100;
 
   /**
@@ -72,21 +71,21 @@ public class URoadGamePanel extends URoadGameBase {
    * switching of messages due to noise.
    */
   private static final double MIN_SPEED_TOLERANCE = 1.0;
-  
+
   /**
    * If the target in flow is less than this, in cars per hour, and there is
    * free flow, we display the low flow message.
    */
   private static final double LOW_FLOW_THRESHOLD = 1700;
-  
+
   /**
-   * If the target in flow is less than this, in cars per hour, but larger
-   * than LOW_FLOW_THRESHOLD, and there is free flow, we display the optimal
-   * flow message; if the flow is over this threshold and there is free flow,
-   * , we show the high flow (unstable) message.
+   * If the target in flow is less than this, in cars per hour, but larger than
+   * LOW_FLOW_THRESHOLD, and there is free flow, we display the optimal flow
+   * message; if the flow is over this threshold and there is free flow, , we
+   * show the high flow (unstable) message.
    */
   private static final double OPTIMAL_FLOW_THRESHOLD = 1850;
-  
+
   private final URoadCanvas simCanvas;
 
   private final ThresholdMachine messageMachine;
@@ -99,40 +98,65 @@ public class URoadGamePanel extends URoadGameBase {
     super("flow breakdown", false);
 
     //
-    // messages
+    // idea message
     //
-    JPanel freeLowMessage = new JPanel();
-    freeLowMessage.setBackground(Color.WHITE);
-    freeLowMessage.add(UI.makeStyledTextPane("Traffic Report: free flow\n"
-        + "The junction is operating well below capacity.\n"
-        + "Drag the slider to increase the target flow on the main road."),
-        BorderLayout.CENTER);
+    ideaContainer.setLayout(new BorderLayout());
+    JLabel titleLabel = new JLabel("You are the Invisible Referee!");
+    titleLabel.setFont(UI.HEADER_FONT);
+    titleLabel.setBorder(BorderFactory.createEmptyBorder(2 * UI.PAD, 0, 0, 0));
+    ideaContainer.add(titleLabel, BorderLayout.NORTH);
+    ideaContainer.add(UI.makeStyledTextPane("\n", "small",
+        "Control this busy motorway junction: vary the ", "regular", "in flow",
+        "purple", " on\nthe main road to make the ", "regular", "out flow",
+        "dark_red", " as big as possible."), BorderLayout.CENTER);
+
+    //
+    // flow messages
+    //
+    JPanel freeLowMessage = new JPanel(new BorderLayout());
+    freeLowMessage.add(UI.makeTrafficReportLabel("Free Flow", UI.GREEN),
+        BorderLayout.NORTH);
+    freeLowMessage.add(UI.makeStyledTextPane("\n", "small",
+        "The junction is operating well below capacity " + UI.EM_DASH
+            + " you can\nget more ", "regular", "out flow", "dark_red",
+        " than this!\n", "regular", "\n", "small",
+        "Drag the slider to increase the ", "regular", "in flow", "purple",
+        " on the main road."), BorderLayout.CENTER);
     messageContainer.add(freeLowMessage, FREE_LOW_CARD);
 
-    JPanel freeOptimalMessage = new JPanel();
-    freeOptimalMessage.setBackground(Color.WHITE);
-    freeOptimalMessage
-        .add(
-            UI.makeStyledTextPane("Traffic Report: free flow\n"
-                + "The junction is running near capacity, and traffic is flowing freely.\n"
-                + "Well done!\n"), BorderLayout.CENTER);
+    JPanel freeOptimalMessage = new JPanel(new BorderLayout());
+    freeOptimalMessage.add(UI.makeTrafficReportLabel("Free Flow", UI.GREEN),
+        BorderLayout.NORTH);
+    freeOptimalMessage.add(UI.makeStyledTextPane("\n", "small",
+        "The junction is running near its maximum capacity " + UI.EM_DASH
+            + " you\ncannot get much more ", "regular", "out flow", "dark_red",
+        " without risking jams.\n", "regular", "\n", "small", "Well done!"),
+        BorderLayout.CENTER);
     messageContainer.add(freeOptimalMessage, FREE_OPTIMAL_CARD);
 
-    JPanel freeHighMessage = new JPanel();
-    freeHighMessage.setBackground(Color.WHITE);
-    freeHighMessage.add(UI
-        .makeStyledTextPane("Traffic Report: free flow, for now...\n"
-            + "The junction is over-capacity. Traffic is flowing freely now,\n"
-            + "but flow may break down soon.\n"
-            + "Drag the slider to decrease the target flow on the main road."),
+    JPanel freeHighMessage = new JPanel(new BorderLayout());
+    freeHighMessage.add(
+        UI.makeTrafficReportLabel("Free Flow, for now...", UI.GREEN),
+        BorderLayout.NORTH);
+    freeHighMessage.add(UI.makeStyledTextPane("\n", "small",
+        "The junction is over-capacity, because the ", "regular", "in flow",
+        "purple", " is too big.\n", "regular", "\n", "small",
+        "Traffic is flowing freely now, but it is not very stable "
+            + UI.EM_DASH + " the\nflow may break down soon and form jams.\n",
+        "regular", "\n", "small", "Drag the slider to decrease the ",
+        "regular", "in flow", "purple", " on the main road."),
         BorderLayout.CENTER);
     messageContainer.add(freeHighMessage, FREE_HIGH_CARD);
 
-    JPanel congestionMessage = new JPanel();
-    congestionMessage.setBackground(Color.WHITE);
-    congestionMessage.add(UI.makeStyledTextPane("Traffic Report: congestion\n"
-        + "Drag the slider to decrease the target flow on the main road."),
-        BorderLayout.CENTER);
+    JPanel congestionMessage = new JPanel(new BorderLayout());
+    congestionMessage.add(UI.makeTrafficReportLabel("Phantom Jams", UI.RED),
+        BorderLayout.NORTH);
+    congestionMessage.add(UI.makeStyledTextPane("\n", "small", "The ",
+        "regular", "in flow", "purple",
+        " is too big, and the junction is congested\nwith phantom jams "
+            + UI.EM_DASH + " so less comes out than goes in!\n", "regular",
+        "\n", "small", "Drag the slider to decrease the ", "regular",
+        "in flow", "purple", " on the main road."), BorderLayout.CENTER);
     messageContainer.add(congestionMessage, CONGESTION_CARD);
 
     //
@@ -155,13 +179,10 @@ public class URoadGamePanel extends URoadGameBase {
     //
     simCanvas = new URoadCanvas(TARGET_FPS);
     simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
-        .createEmptyBorder(PAD, PAD, PAD, PAD),
-        new RoundedBorder(UI.BACKGROUND.brighter(), null,
-            MessageBubble.CORNER_RADIUS, MessageBubble.BORDER_WIDTH, true)));
+        .createEmptyBorder(UI.PAD, UI.PAD, UI.PAD, UI.PAD), new RoundedBorder(
+        UI.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
+        MessageBubble.BORDER_WIDTH, true)));
     simCanvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);
-    JLabel flowLabel = new JLabel();
-    flowLabel.setFont(UI.HEADER_FONT);
-    simCanvas.getFloatPanel().add(flowLabel);
     gameContainer.add(simCanvas, CARD_GAME);
 
     //
@@ -174,7 +195,7 @@ public class URoadGamePanel extends URoadGameBase {
   protected void updateMessage() {
     if (simCanvas.getSim() == null)
       return;
-    
+
     double minSpeed = simCanvas.getSim().getMinSpeedInInsideLane();
     messageMachine.observe(minSpeed);
     if (messageMachine.getState().equals(FREE_STATE)) {

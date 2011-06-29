@@ -194,8 +194,9 @@ public class MainFrame extends JFrame implements Constants {
 
         MainFrame f = createOnMonitor(device);
         f.setAlwaysOnTop(true);
-        f.showCover();
-        //f.showFlowGame();
+        //f.showCover();
+        //f.showRingRoadGame();
+        f.showFlowGame();
         
         if (args.length > 1 && args[1].equals("CHAOS")) {
           startChaosRobot(f);

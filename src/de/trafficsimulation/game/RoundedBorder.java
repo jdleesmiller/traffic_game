@@ -21,7 +21,7 @@ import javax.swing.border.AbstractBorder;
 public class RoundedBorder extends AbstractBorder {
   private static final long serialVersionUID = 1L;
   
-  private final Color borderColor;
+  private Color borderColor;
   private final Color innerColor;
   private final float weight;
   private final Stroke stroke;
@@ -78,5 +78,13 @@ public class RoundedBorder extends AbstractBorder {
 
   public boolean isBorderOpaque() {
     return true;
+  }
+
+  public Color getBorderColor() {
+    return borderColor;
+  }
+
+  public void setBorderColor(Color borderColor) {
+    this.borderColor = borderColor;
   }
 }

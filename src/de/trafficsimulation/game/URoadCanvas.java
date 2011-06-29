@@ -224,9 +224,9 @@ public class URoadCanvas extends SimCanvas {
     ptIn.x -= leftArrow.wBody;
     ptIn.y -= leftArrow.yTop - ARROW_PAD;
     g2.translate(ptIn.x, ptIn.y);
-    g2.setColor(UI.PURPLE_HIGHLIGHT);
+    g2.setColor(UI.PURPLE);
     g2.fill(leftArrow.path);
-    g2.setColor(Color.BLACK);
+    g2.setColor(Color.WHITE);
     g2.drawString(getFlowString(sim.qIn), 0f, 0f);
     g2.setTransform(tx);
     
@@ -239,7 +239,7 @@ public class URoadCanvas extends SimCanvas {
     metersToPixels.transform(ptRamp, ptRamp);
     ptRamp.y -= rightArrow.yTop;
     g2.translate(ptRamp.x, ptRamp.y);
-    g2.setColor(UI.PURPLE_HIGHLIGHT);
+    g2.setColor(UI.GREEN_HIGHLIGHT);
     g2.fill(rightArrow.path);
     g2.translate(textRect.getWidth() - qRampRect.getWidth(), 0);
     g2.setColor(Color.BLACK);
@@ -255,10 +255,10 @@ public class URoadCanvas extends SimCanvas {
     ptOut.x -= rightArrow.wBody + rightArrow.wHead;
     ptOut.y -= rightArrow.yBot + ARROW_PAD;
     g2.translate(ptOut.x, ptOut.y);
-    g2.setColor(UI.PURPLE_HIGHLIGHT);
+    g2.setColor(UI.DARK_RED);
     g2.fill(rightArrow.path);
     g2.translate(textRect.getWidth() - qOutRect.getWidth(), 0);
-    g2.setColor(Color.BLACK);
+    g2.setColor(Color.WHITE);
     g2.drawString(qOutString, 0f, 0f);
     g2.setTransform(tx);
   }
