@@ -1,1 +1,2 @@
-javaw -jar de.trafficsimulation.game.jar %1
+javaw -jar de.trafficsimulation.game.jar %1 %2
+pause
