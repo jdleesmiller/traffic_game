@@ -24,20 +24,6 @@ import javax.swing.event.ChangeListener;
 
 import de.trafficsimulation.core.Constants;
 
-/* TODO 20110519
-- return to main menu after long pause DONE
-- moving average + popup: flow OK / broken on each flow game sim GUI?
-- logos + colors
-- ramp metering game
-+ vsl game
-- change to run background sims for a fixed time DONE
-
-- spin up n bg threads
-- run sims in series
-- still need a warmup
-- just propagate flow updates to the main thread
- */
-
 public abstract class URoadParameterPanel extends JPanel implements Constants {
   private static final long serialVersionUID = 1L;
   
@@ -252,7 +238,7 @@ public abstract class URoadParameterPanel extends JPanel implements Constants {
     scoreCardLayout.show(scorePanel, SCORE_CARD_CALCULATING);
     gameProgressTimer.start();
     roundProgressBar.setValue(0);
-    roundProgressBar.setIndeterminate(true); // TODO HACK
+    roundProgressBar.setIndeterminate(true);
   }
   
   private void startBackgroundSims(final double qIn, final double qRamp,
