@@ -1,15 +1,20 @@
 package de.trafficsimulation.game;
 
 import java.awt.AWTEvent;
+import java.awt.AWTException;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -31,6 +36,18 @@ public class MainFrame extends JFrame implements Constants {
    * interval, in milliseconds.
    */
   private static final int INACTIVITY_TIMEOUT_MS = 90 * 1000;
+
+  /**
+   * Delay between events (clicks or drags) created by the chaos robot (used for
+   * testing).
+   */
+  private static final int CHAOS_ROBOT_WAIT_MS = 50;
+
+  /**
+   * Probability that a particular robot even will be a click; otherwise, it
+   * will be a drag.
+   */
+  private static final double CHAOS_ROBOT_CLICK_PROBABILITY = 0.3;
 
   private final CardLayout cardLayout;
   private final CoverPanel coverPanel;
@@ -177,8 +194,12 @@ public class MainFrame extends JFrame implements Constants {
 
         MainFrame f = createOnMonitor(device);
         f.setAlwaysOnTop(true);
-        // TODO f.showCover();
-        f.showFlowGame();
+        f.showCover();
+        //f.showFlowGame();
+        
+        if (args.length > 1 && args[1].equals("CHAOS")) {
+          startChaosRobot(f);
+        }
       }
     });
   }
@@ -245,5 +266,35 @@ public class MainFrame extends JFrame implements Constants {
     f.setExtendedState(f.getExtendedState() | MAXIMIZED_BOTH);
     
     return f;
+  }
+  
+  /**
+   * Start a timer that clicks and drags randomly, for testing.
+   * 
+   * @param f not null
+   */
+  private static void startChaosRobot(final MainFrame f) {
+    try {
+      final Robot robot = new Robot(f.getGraphicsConfiguration().getDevice());
+      final Random random = new Random();
+      Timer robotTimer = new Timer(CHAOS_ROBOT_WAIT_MS, new ActionListener() {        
+        private void mouseMoveRandom() {
+          Rectangle bounds = f.getBounds();
+          robot.mouseMove(bounds.x + random.nextInt(bounds.width),
+              bounds.y + random.nextInt(bounds.height));
+        }
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+          mouseMoveRandom();
+          robot.mousePress(InputEvent.BUTTON1_MASK);
+          if (random.nextDouble() >= CHAOS_ROBOT_CLICK_PROBABILITY)
+            mouseMoveRandom();
+          robot.mouseRelease(InputEvent.BUTTON1_MASK);
+        }
+      });
+      robotTimer.start();
+    } catch (AWTException e) {
+      e.printStackTrace();
+    }
   }
 }
