@@ -170,6 +170,9 @@ public class URoadGamePanel extends URoadGameBase {
   }
 
   protected void updateMessage() {
+    if (simCanvas.getSim() == null)
+      return;
+    
     double minSpeed = simCanvas.getSim().getMinSpeedInInsideLane();
     messageMachine.observe(minSpeed);
     if (messageMachine.getState().equals(FREE_STATE)) {
@@ -225,9 +228,9 @@ public class URoadGamePanel extends URoadGameBase {
   }
 
   public void stop() {
+    messageTimer.stop();
     simCanvas.stop();
     warmupPool.stop();
-    messageTimer.stop();
   }
 
   /** For testing */
