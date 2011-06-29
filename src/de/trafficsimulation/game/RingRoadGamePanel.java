@@ -205,11 +205,11 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     if (messageMachine.observe(minSpeed)) {
       messageLayout.show(messageContainer, messageMachine.getState());
 
-      // only show the hint at low density
-      if (messageMachine.getState().equals(FREE_FLOW_CARD)) {
-        densitySlider.setHintValue(HINT_DENSITY_INVKM);
-      } else {
+      // hide the hint when jams form
+      if (messageMachine.getState().equals(JAM_CARD)) {
         densitySlider.setHintValue(Double.NaN);
+      } else {
+        densitySlider.setHintValue(HINT_DENSITY_INVKM);
       }
     }
   }
