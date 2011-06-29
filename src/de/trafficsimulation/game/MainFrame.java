@@ -30,7 +30,7 @@ public class MainFrame extends JFrame implements Constants {
    * Reload the intro panel if there has not been any activity after this
    * interval, in milliseconds.
    */
-  private static final int INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+  private static final int INACTIVITY_TIMEOUT_MS = 90 * 1000;
 
   private final CardLayout cardLayout;
   private final CoverPanel coverPanel;
