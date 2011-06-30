@@ -86,7 +86,7 @@ public class URoadCanvas extends SimCanvas {
 
     // speed limit sign
     // Rectangle2D uBounds = getURoad().getBoundsMeters();
-    // double r = 20; // m TODO
+    // double r = 20; // m 
     // double speedLimitSignX = uBounds.getMaxX() - r - LANEWIDTH_M;
     // double speedLimitSignY = uBounds.getMinY() + 3 * LANEWIDTH_M - r;
     // speedLimitCircle = new Ellipse2D.Double(speedLimitSignX - r,

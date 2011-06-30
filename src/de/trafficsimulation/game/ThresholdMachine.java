@@ -5,8 +5,6 @@ package de.trafficsimulation.game;
  * infinite) interval of the real line. An observation causes the machine to
  * transition to the corresponding state. A tolerance can be provided to avoid
  * chatter at the boundaries between states.
- * 
- * TODO maybe add minimum state dwell time?
  */
 public class ThresholdMachine {
   private final String[] states;
