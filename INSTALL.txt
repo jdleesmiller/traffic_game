@@ -83,10 +83,6 @@ Software to install:
     - Help > Install New Software
     - Work with: Helios
     - Collaboration > Eclipse EGit (optional)
-
-Things for Recovery Stick:
-  - 32-bit JRE
-  - the game JAR
     
 -- GREEN-LO (green game + top TV)
 
