@@ -120,7 +120,7 @@ public class URoadGamePanel extends URoadGameBase {
         "The junction is operating well below capacity " + UI.EM_DASH
             + " you can\nget more ", "regular", "out flow", "dark_red",
         " than this!\n", "regular", "\n", "small",
-        "Drag the slider to increase the ", "regular", "in flow", "purple",
+        "Drag the circle to increase the ", "regular", "in flow", "purple",
         " on the main road."), BorderLayout.CENTER);
     messageContainer.add(freeLowMessage, FREE_LOW_CARD);
 
@@ -143,7 +143,7 @@ public class URoadGamePanel extends URoadGameBase {
         "purple", " is too big.\n", "regular", "\n", "small",
         "Traffic is flowing freely now, but it is not very stable "
             + UI.EM_DASH + " the\nflow may break down soon and form jams.\n",
-        "regular", "\n", "small", "Drag the slider to decrease the ",
+        "regular", "\n", "small", "Drag the circle to decrease the ",
         "regular", "in flow", "purple", " on the main road."),
         BorderLayout.CENTER);
     messageContainer.add(freeHighMessage, FREE_HIGH_CARD);
@@ -155,8 +155,9 @@ public class URoadGamePanel extends URoadGameBase {
         "regular", "in flow", "purple",
         " is too big, and the junction is congested\nwith phantom jams "
             + UI.EM_DASH + " so less comes out than goes in!\n", "regular",
-        "\n", "small", "Drag the slider to decrease the ", "regular",
-        "in flow", "purple", " on the main road."), BorderLayout.CENTER);
+        "\n", "small", "Drag the ", "regular", "purple circle", "purple",
+        " to decrease the ", "regular", "in flow", "purple",
+        " on the main road."), BorderLayout.CENTER);
     messageContainer.add(congestionMessage, CONGESTION_CARD);
 
     //

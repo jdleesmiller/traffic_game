@@ -82,7 +82,12 @@ public class MainFrame extends JFrame implements Constants {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void goToNextLevel() {
+      public void onBackClicked() {
+        showCover();
+      }
+
+      @Override
+      public void onNextClicked() {
         showFlowGame();
       }
     };
@@ -101,8 +106,6 @@ public class MainFrame extends JFrame implements Constants {
 
       @Override
       protected void onNextClicked() {
-        showCover();
-        //showSpeedGame(); DISABLED
       }
     };
     add(flowGamePanel, FLOW_GAME_CARD);
@@ -194,9 +197,9 @@ public class MainFrame extends JFrame implements Constants {
 
         MainFrame f = createOnMonitor(device);
         f.setAlwaysOnTop(true);
-        //f.showCover();
+        f.showCover();
         //f.showRingRoadGame();
-        f.showFlowGame();
+        //f.showFlowGame();
         
         if (args.length > 1 && args[1].equals("CHAOS")) {
           startChaosRobot(f);

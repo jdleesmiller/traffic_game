@@ -64,7 +64,11 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
       private static final long serialVersionUID = 1L;
 
       @Override
-      public void goToNextLevel() {
+      public void onNextClicked() {
+      }
+
+      @Override
+      public void onBackClicked() {
       }
     };
     f.add(p);
@@ -96,8 +100,13 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
       private static final long serialVersionUID = 1L;
 
       @Override
+      public void onBackClicked() {
+        RingRoadGamePanel.this.onBackClicked();
+      }
+
+      @Override
       public void onNextClicked() {
-        goToNextLevel();
+        RingRoadGamePanel.this.onNextClicked();
       }
     };
     add(titleBar, BorderLayout.NORTH);
@@ -146,8 +155,8 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
     freeFlowMessage.add(UI.makeStyledTextPane(
         "There are very few cars on the road, and everyone can\n"
             + "drive at their own speed.\n", "regular", "\n", "small",
-        "Try moving the slider to the right to add more cars..."),
-        BorderLayout.CENTER);
+        "Try moving the ", "regular", "purple circle", "purple",
+        " to the right to add more cars..."), BorderLayout.CENTER);
     messageContainer.add(freeFlowMessage, FREE_FLOW_CARD);
 
     JPanel congestionMessage = new JPanel(new BorderLayout());
@@ -159,7 +168,7 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
                 "The road is busy, and the drivers need to slow down for\nsafety.\n",
                 "regular", "\n", "small", "This flow is unstable.\n",
                 "regular", "\n", "small",
-                "Try moving the slider to the right to add even more cars..."),
+                "Try moving the circle to the right to add even more cars..."),
             BorderLayout.CENTER);
     messageContainer.add(congestionMessage, CONGESTION_CARD);
 
@@ -187,9 +196,15 @@ public abstract class RingRoadGamePanel extends JPanel implements Constants {
   }
 
   /**
+   * Called when the user presses the back button; it isn't actually visible,
+   * but it can be touched.
+   */
+  public abstract void onBackClicked();
+
+  /**
    * Called when the user presses the next button.
    */
-  public abstract void goToNextLevel();
+  public abstract void onNextClicked();
 
   public void start() {
     ringRoadCanvas.start(42);
