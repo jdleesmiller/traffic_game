@@ -2,6 +2,10 @@
 
 -- COMMON PREP FOR WINXP and WIN7
 
+Set machine name and workgroup.
+  - Machine names are like RSIR-AMBER-HI etc.
+  - Workgroup is RSIR
+
 Enable Remote Desktop
   - System Properties > Remote > Allow users to connect remotely
 
