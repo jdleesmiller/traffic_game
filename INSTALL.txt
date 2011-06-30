@@ -2,6 +2,10 @@
 
 -- COMMON PREP FOR WINXP and WIN7
 
+Change BIOS boot order:
+  - Press and hold DEL during Viglen screen to access.
+  - Put CD/DVD first, then SATA (HD); disable network boot.
+
 Set machine name and workgroup.
   - Machine names are like RSIR-AMBER-HI etc.
   - Workgroup is RSIR
@@ -24,7 +28,8 @@ Set PATH to point to JRE
   
 -- WINXP PREP
 
-TODO document these
+Disable all tray notifications:
+  - Use the wizard at: http://support.microsoft.com/kb/307729
 
 -- WINDOWS 7 PREP
 
@@ -39,7 +44,7 @@ Disable Screensaver (seems to be disabled by default now)
 Remove Windows logos
   - Right click on desktop; go to Personalize
   - Change Picture location to "solid colors" and choose More... (bottom left)
-  - Change to Red 153, Green 204, Blue 0 (zero)
+  - Change to Red 153, Green 204, Blue 0 (zero) (for green game)
 
 Disable onscreen keyboard
   - Move finger to center left of one of the screens to bring up keyboard.
@@ -63,7 +68,12 @@ Set IE9 home page to blank.
 
 Tell it not to hide file extensions.
   - this is annoying for development
-  - Control Panel > Folder Options > View > Hide file extensions for known types (uncheck)
+  - Control Panel > Folder Options > View > Hide file extensions for known
+    types (uncheck)
+    
+Disable all tray notifications:
+  - Click the up arrow on the tray; go to Customize...
+  - Set everything to "hide icons and notifications"
 
 Software to install:
   - Microsoft Security Essentials
