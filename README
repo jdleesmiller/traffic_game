@@ -1,6 +1,25 @@
-A traffic flow game... in progress.
+traffic_game
+============
+
+A traffic flow game for the Royal Society Summer Science Exhibition, 2011.
+http://royalsociety.org/summer-science/2011/traffic-control/
+
+Based on Martin Treiber's applet from:
+http://www.traffic-simulation.de/
+
+The main difference is that the visualisation is a bit more colorful, and it
+includes more explanatory text. I cleaned up a few things in the 'core'
+simulation library, but it is mostly unchanged.
+
+Requirements
+------------
+
+The game was designed to run on a touch screen at 1920x1080 (that is, 1080p).
+
+The only dependency is Java 6.
 
 To build and run, type
   make
 
 Or you can import this project into Eclipse (www.eclipse.org).
+
