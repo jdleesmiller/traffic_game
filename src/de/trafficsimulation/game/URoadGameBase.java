@@ -3,7 +3,9 @@ package de.trafficsimulation.game;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -21,8 +23,6 @@ public abstract class URoadGameBase extends JPanel {
 
   protected static final int FLOW_IN_INIT = 2500;
 
-  protected static final int PAD = 10;
-  
   /**
    * Run the sim for this long before displaying the results.
    */
@@ -31,8 +31,7 @@ public abstract class URoadGameBase extends JPanel {
   /**
    * Time steps per frame drawn for the visible sims. A large number here makes
    * them run very fast.
-   */
-  protected final static int TIME_STEPS_PER_FRAME = 10;
+   */ protected final static int TIME_STEPS_PER_FRAME = 1;
   
   /**
    * The name of the card to show when the simulator is starting a new run. 
@@ -53,6 +52,8 @@ public abstract class URoadGameBase extends JPanel {
   protected final JPanel gameContainer;
 
   protected final CardLayout gameCards;
+
+  protected final JPanel ideaContainer;
   
   public URoadGameBase(String title, boolean next) {
     super(new BorderLayout());
@@ -78,14 +79,25 @@ public abstract class URoadGameBase extends JPanel {
     //
     // control panel
     //
+    JPanel leftPanel = new JPanel();
+    leftPanel.setBorder(BorderFactory.createEmptyBorder(UI.PAD, UI.PAD, UI.PAD, UI.PAD));
+    leftPanel.setLayout(new GridLayout(2, 1, 0, UI.PAD));
+    add(leftPanel, BorderLayout.WEST);
+    
+    ideaContainer = new MessageBubble();
+    leftPanel.add(ideaContainer);
+    
     JPanel controlPanel = new MessageBubble();
-    controlPanel.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD),
-        controlPanel.getBorder()));
-    add(controlPanel, BorderLayout.WEST);
+    leftPanel.add(controlPanel);
     
     flowInSlider = new BigSlider(FLOW_IN_MIN, FLOW_IN_MAX, FLOW_IN_INIT) {
       private static final long serialVersionUID = 1L;
+      
+      {
+        setPreferredSize(new Dimension(1, 100));
+        setBorder(BorderFactory.createEmptyBorder(UI.PAD, 0, 3 * UI.PAD, 0));
+      }
+      
       @Override
       public void onValueUpdated() {
         updateFlowIn();
@@ -97,7 +109,6 @@ public abstract class URoadGameBase extends JPanel {
     messageCards = new CardLayout();
     messageContainer = new JPanel(messageCards);
     messageContainer.setBackground(Color.WHITE);
-    messageContainer.setBorder(BorderFactory.createEmptyBorder(PAD, 0, 0, 0));
     controlPanel.add(messageContainer, BorderLayout.CENTER);
     
     JPanel warmupMessage = new JPanel();

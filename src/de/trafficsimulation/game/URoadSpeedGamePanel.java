@@ -53,7 +53,7 @@ public class URoadSpeedGamePanel extends URoadGameBase {
     for (int i = 0; i < simSpeeds.length; ++i) {
       URoadCanvas simCanvas = new URoadCanvas();
       simCanvas.setBorder(BorderFactory.createCompoundBorder(BorderFactory
-          .createEmptyBorder(PAD, PAD, PAD, PAD), new RoundedBorder(
+          .createEmptyBorder(UI.PAD, UI.PAD, UI.PAD, UI.PAD), new RoundedBorder(
           UI.BACKGROUND.brighter(), null, MessageBubble.CORNER_RADIUS,
           MessageBubble.BORDER_WIDTH, true)));
       simCanvas.setTimeStepsPerFrame(TIME_STEPS_PER_FRAME);

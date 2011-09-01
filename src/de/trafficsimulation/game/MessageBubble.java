@@ -15,11 +15,19 @@ public class MessageBubble extends JPanel {
   
   public final static int BORDER_WIDTH = 10; // px
   
+  private final RoundedBorder roundedBorder;
+  
+  public RoundedBorder getRoundedBorder() {
+    return roundedBorder;
+  }
+
   public MessageBubble() {
     super(new BorderLayout());
     
+    roundedBorder = new RoundedBorder(UI.BACKGROUND_HIGHLIGHT, Color.WHITE,
+        CORNER_RADIUS, BORDER_WIDTH);
+    
     setOpaque(true);
-    setBorder(new RoundedBorder(UI.BACKGROUND_HIGHLIGHT, Color.WHITE,
-        CORNER_RADIUS, BORDER_WIDTH));
+    setBorder(roundedBorder);
   }
 }

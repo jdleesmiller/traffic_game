@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 /**
  * The default (game start) panel.
@@ -40,6 +42,15 @@ public class CoverPanel extends JPanel {
       }
     };
     ringRoadCanvas.add(playButton);
+    
+    //
+    // credit
+    //
+    JLabel creditLabel = new JLabel(
+        "based on an applet by Martin Treiber (www.mtreiber.de)");
+    creditLabel.setFont(UI.BODY_FONT);
+    creditLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+    add(creditLabel, BorderLayout.SOUTH);
   }
 
   public void start() {

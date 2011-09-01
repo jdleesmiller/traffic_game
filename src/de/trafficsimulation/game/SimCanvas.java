@@ -44,7 +44,7 @@ public abstract class SimCanvas extends JPanel implements Constants {
   /**
    * Target display frame rate, in frames per (real) second.
    */
-  public static final int TARGET_FPS = 30;
+  public static final int DEFAULT_TARGET_FPS = 30;
   
   /**
    * Car with center at the origin, driving north (negative y-axis, in the
@@ -75,11 +75,15 @@ public abstract class SimCanvas extends JPanel implements Constants {
   AffineTransform metersToPixels;
   
   public SimCanvas(List<RoadBase> roads) {
+    this(roads, DEFAULT_TARGET_FPS);
+  }
+  
+  public SimCanvas(List<RoadBase> roads, int targetFPS) {
     super(true); // double buffer
     
     this.timeStepsPerFrame = 1;
     
-    this.timer = new Timer(1000 / TARGET_FPS, new ActionListener() {
+    this.timer = new Timer(1000 / targetFPS, new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         for (int i = 0; i < timeStepsPerFrame; ++i)
           tick();

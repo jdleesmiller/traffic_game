@@ -1,18 +1,37 @@
--- SETUP NOTES FOR GREEN GAME --
-   on Windows 7
+---- SETUP NOTES ----
 
-Fiddle with Main Display Setting
-  - Touch screen input is apparently reversed sometimes (that is, touch input on display 1
-    affects display 2, and vice versa).
-  - Not sure exactly what the patttern is, but switching the main display to the other display
-    has fixed the problem for me in the past.
-  - Right click on desktop; go to Change Resolution
-  - Try making the other monitor the main monitor.
+-- COMMON PREP FOR WINXP and WIN7
+
+Change BIOS boot order:
+  - Press and hold DEL during Viglen screen to access.
+  - Put CD/DVD first, then SATA (HD); disable network boot.
+
+Set machine name and workgroup.
+  - Machine names are like RSIR-AMBER-HI etc.
+  - Workgroup is RSIR
+
+Enable Remote Desktop
+  - System Properties > Remote > Allow users to connect remotely
+
+Allow password-less log-on
+  - Control Panel > Administrative Tools > Local Security Policy
+  - Local Policies > Security Options
+  - Accounts: Limit local account use of blank passwords... -> Disabled
+
+Set PATH to point to JRE
+  - WinKey + Break > Advanced System Settings > Advanced > Environmental Variables
+  - Create a new User Variable called PATH with value
+%PATH%;C:\Program Files\Java\jre6\bin;C:\Program Files\Java\jdk1.6.0_26\bin
+  - Note: Both the 32-bit and 64-bit JDKs + bundled JREs seem use these paths,
+    but they may not be the same, depending on how Java was installed (and
+    updates etc.)
   
-Hide the Task Bar in the middle of the two screens
-  - Unlock it, set it to autohide, and then drag it to the right edge of the
-    left screen (or the left edge of the right screen).
-  - This seems to make it invisible, after a short delay.
+-- WINXP PREP
+
+Disable all tray notifications:
+  - Use the wizard at: http://support.microsoft.com/kb/307729
+
+-- WINDOWS 7 PREP
 
 Disable Screen-Off and Sleep
   - Control Panel > Power Options > Choose when to turn off the display
@@ -25,7 +44,7 @@ Disable Screensaver (seems to be disabled by default now)
 Remove Windows logos
   - Right click on desktop; go to Personalize
   - Change Picture location to "solid colors" and choose More... (bottom left)
-  - Change to Red 153, Green 204, Blue 0 (zero)
+  - Change to Red 153, Green 204, Blue 0 (zero) (for green game)
 
 Disable onscreen keyboard
   - Move finger to center left of one of the screens to bring up keyboard.
@@ -40,33 +59,50 @@ Disable "Flicks" (gesture input)
 Disable Multitouch Gestures
   - Control Panel > Pen and Touch > Touch
   - Uncheck "Enable multi-touch gestures and inking"
-
-Disable Press and Hold for right click?
-  - Can't seem to do this.
-
+  
 Calibrate Touch Screens
   - Control Panel > Tablet PC Settings > Display 
-  - Calibrate for both displays.
 
 Set IE9 home page to blank.
   - Internet options (gear icon in top right).
 
 Tell it not to hide file extensions.
   - this is annoying for development
-  - Control Panel > Folder Options > View > Hide file extensions for known types (uncheck)
-
-Set PATH to point to JRE
-  - WinKey + Break > Advanced System Settings > Advanced > Environmental Variables
-  - Create a new User Variable called PATH with value
-%PATH%;C:\Program Files\Java\jre6\bin;C:\Program Files\Java\jdk1.6.0_26\bin
-  - Note: The 64-bit JDK + bundled JRE seems to put the files in these paths;
-    the paths may not be the same, depending on how Java was installed (and updates etc.)
+  - Control Panel > Folder Options > View > Hide file extensions for known
+    types (uncheck)
+    
+Disable all tray notifications:
+  - Click the up arrow on the tray; go to Customize...
+  - Set everything to "hide icons and notifications"
 
 Software to install:
   - Microsoft Security Essentials
   - Java Development Kit (JDK)
   - MSYSGIT http://help.github.com/win-set-up-git/
-  - Eclipse
+  - Eclipse (32-bit or 64-bit)
     - Help > Install New Software
     - Work with: Helios
-    - Collaboration > Eclipse EGit
+    - Collaboration > Eclipse EGit (optional)
+    
+-- GREEN-LO (green game + top TV)
+
+Must have the touch screen set to be the main display.
+  - Otherwise input will be mapped to the wrong screen.
+  
+----------- OLD --------------
+
+Fiddle with Main Display Setting
+  - Touch screen input is apparently reversed sometimes (that is, touch input on display 1
+    affects display 2, and vice versa).
+  - Not sure exactly what the patttern is, but switching the main display to the other display
+    has fixed the problem for me in the past.
+  - Right click on desktop; go to Change Resolution
+  - Try making the other monitor the main monitor.
+  
+Hide the Task Bar in the middle of the two screens
+  - Unlock it, set it to autohide, and then drag it to the right edge of the
+    left screen (or the left edge of the right screen).
+  - This seems to make it invisible, after a short delay.
+
+Disable Press and Hold for right click?
+  - Can't seem to do this.
